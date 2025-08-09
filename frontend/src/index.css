@@ -3,8 +3,9 @@
 @tailwind utilities;
 
 body {
-  background: #f8fafc;
-  transition: background 0.4s ease;
+  background: #0b1412;
+  color: #e5e7eb;
+  transition: background 0.4s ease, color 0.4s ease;
 }
 
 .swiper-pagination-bullet {
