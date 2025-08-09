@@ -1,9 +1,13 @@
 # Dependencies
 /node_modules
+/frontend/node_modules
+/backend/node_modules
 
-# Build files
+# Environment files
+.env
+/frontend/.env
+/backend/.env
+
+# Build output
 /build
-/dist
-
-# Log files
-*.log
+/frontend/build
