@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
 import PageLayout from "./PageLayout";
-import { mockUsers } from "./mockUsers";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import axios from 'axios'; // Added for API calls
 
 function getInitials(name) {
-  return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0,2);
+  if (!name) return ''; // Safety check
+  return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
 }
 
 function Arrow({ active, dir }) {
-  // Truly single-headed vertical arrow (bow and arrow style)
   const isAsc = dir === "asc";
   return (
     <svg
@@ -20,25 +20,61 @@ function Arrow({ active, dir }) {
       className="inline ml-1 align-middle transition-transform duration-150"
       style={{ verticalAlign: "middle" }}
     >
-      {/* Arrow shaft */}
       <line x1="12" y1="4" x2="12" y2="20" stroke={active ? "#FFD600" : "#888"} strokeWidth="2" strokeLinecap="round" />
-      {/* Arrow head: only at the top for asc, only at the bottom for desc */}
       {isAsc ? (
         <polygon points="12,4 9,8 15,8" fill={active ? "#FFD600" : "#888"} />
       ) : (
         <polygon points="12,20 9,16 15,16" fill={active ? "#FFD600" : "#888"} />
       )}
-      {/* Arrow tail (feathers) always at the bottom */}
       <line x1="12" y1="20" x2="9" y2="17" stroke={active ? "#FFD600" : "#888"} strokeWidth="1.5" />
       <line x1="12" y1="20" x2="15" y2="17" stroke={active ? "#FFD600" : "#888"} strokeWidth="1.5" />
     </svg>
   );
 }
 
-export default function Leaderboard({ user, showUserGuideModal, setShowUserGuideModal, showAnnouncement, setShowAnnouncement, announcementIdx, announcements, isSliding }) {
+export default function Leaderboard(props) {
+  // Destructure ALL props needed by the component and its children
+  const {
+    user,
+    showUserGuideModal,
+    setShowUserGuideModal,
+    showAnnouncement,
+    setShowAnnouncement,
+    announcementIdx,
+    announcements,
+    isSliding
+  } = props;
+
   const navigate = useNavigate();
   const [sortBy, setSortBy] = useState("tokens");
   const [sortDir, setSortDir] = useState("desc");
+
+  const [leaderboardUsers, setLeaderboardUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      try {
+        const res = await axios.get('http://localhost:5000/api/users/leaderboard');
+        const formattedUsers = res.data.map(dbUser => ({
+          ...dbUser,
+          id: dbUser._id || dbUser.id,
+          tokens: dbUser.tokens ?? 0,
+          winnings: dbUser.winnings ?? 0,
+          successRate: typeof dbUser.successRate === 'number' ? dbUser.successRate : 0,
+          streak: dbUser.streak ?? dbUser.streakCount ?? 0,
+        }));
+        setLeaderboardUsers(formattedUsers);
+      } catch (err) {
+        console.error("Failed to fetch leaderboard", err);
+        setError("Could not load the leaderboard.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchLeaderboard();
+  }, []);
 
   useEffect(() => {
     if (typeof window.confetti !== 'function') return;
@@ -98,21 +134,24 @@ export default function Leaderboard({ user, showUserGuideModal, setShowUserGuide
     }
   }
 
-  let sorted = [...mockUsers].map((u, i) => ({ ...u, rank: i + 1 }));
+  // --- MODIFIED LOGIC: Use the new 'allUsers' state ---
+  let sorted = [...leaderboardUsers];
   if (sortBy === "tokens") {
     sorted.sort((a, b) => sortDir === "asc" ? a.tokens - b.tokens : b.tokens - a.tokens);
   } else if (sortBy === "success") {
     sorted.sort((a, b) => sortDir === "asc" ? a.successRate - b.successRate : b.successRate - a.successRate);
   } else if (sortBy === "streak") {
-    sorted.sort((a, b) => sortDir === "asc" ? Math.floor(a.successRate/10) - Math.floor(b.successRate/10) : Math.floor(b.successRate/10) - Math.floor(a.successRate/10));
-  } else if (sortBy === "rank") {
-    sorted = [...mockUsers].map((u, i) => ({ ...u, rank: i + 1 }));
+    sorted.sort((a, b) => sortDir === "asc" ? (a.streak || 0) - (b.streak || 0) : (b.streak || 0) - (a.streak || 0));
   }
+  
   // After sorting, re-assign rank
   sorted = sorted.map((u, i) => ({ ...u, rank: i + 1 }));
-  const top3 = [sorted[1], sorted[0], sorted[2]];
-  // Actually, sort top3 by tokens descending for correct podium order
-  const podium = [...sorted].sort((a, b) => b.tokens - a.tokens).slice(0, 3);
+
+  // This logic is safer and uses the now-sorted data
+  const podium = sorted.slice(0, 3);
+  while (podium.length < 3) {
+      podium.push({ name: 'N/A', tokens: 0, successRate: 0, id: `placeholder-${podium.length}` });
+  }
 
   return (
     <PageLayout
@@ -129,7 +168,7 @@ export default function Leaderboard({ user, showUserGuideModal, setShowUserGuide
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="text-5xl font-extrabold text-[#28c76f] mb-1 text-center"
+          className="text-3xl sm:text-5xl font-extrabold text-[#28c76f] mb-1 text-center"
         >
           Jobsy Leaderboard
         </motion.h1>
@@ -137,12 +176,12 @@ export default function Leaderboard({ user, showUserGuideModal, setShowUserGuide
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
-          className="text-lg text-slate-300 mb-12 text-center"
+          className="text-base sm:text-lg text-slate-300 mb-12 text-center"
         >
           Celebrating Our Top Performers
         </motion.div>
         {/* Podium */}
-        <div className="flex flex-col md:flex-row justify-center items-end gap-8 mb-12 w-full max-w-6xl mx-auto">
+        <div className="flex flex-col md:flex-row justify-center items-end gap-8 mb-12 w-full max-w-6xl mx-auto px-2 sm:px-4">
           {/* Silver */}
           <div
             className="group w-[280px] h-[320px] rounded-2xl p-6 border border-white/30 flex flex-col items-center justify-center relative transition-all duration-300 ease-in-out hover:scale-105 hover:-rotate-2 hover:shadow-2xl"
@@ -247,14 +286,14 @@ export default function Leaderboard({ user, showUserGuideModal, setShowUserGuide
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
-          className="text-3xl font-bold text-white mb-4 text-center w-full"
+          className="text-2xl sm:text-3xl font-bold text-white mb-4 text-center w-full"
         >
           Complete Rankings
         </motion.h2>
         {/* Complete Rankings Table - edge to edge but with a little margin and sharp edges */}
-        <div className="w-full bg-[#181f1f] shadow-lg p-6 mt-0 mx-2 sm:mx-4 md:mx-8" style={{ borderRadius: 0 }}>
+        <div className="w-full bg-[#181f1f] shadow-lg p-2 sm:p-6 mt-0 mx-0 sm:mx-4 md:mx-8" style={{ borderRadius: 0 }}>
           <div className="overflow-x-auto w-full">
-            <table className="w-full min-w-[700px] text-left text-base">
+            <table className="w-full min-w-[400px] sm:min-w-[700px] text-left text-xs sm:text-base">
               <thead>
                 <tr className="bg-transparent text-[#28c76f] border-b border-[#28c76f]/30">
                   <th className="py-3 px-4 font-bold cursor-pointer select-none" onClick={() => handleSort("rank")}>Rank
@@ -297,7 +336,7 @@ export default function Leaderboard({ user, showUserGuideModal, setShowUserGuide
                         <span className="text-white font-bold">{u.successRate.toFixed(1)}%</span>
                       </div>
                     </td>
-                    <td className="py-2 px-4 text-orange-400 font-bold flex items-center gap-1">{Math.floor(u.successRate / 10)} <span role="img" aria-label="fire">🔥</span></td>
+                    <td className="py-2 px-4 text-orange-400 font-bold flex items-center gap-1">{u.streak || 0} <span role="img" aria-label="fire">🔥</span></td>
                   </motion.tr>
                 ))}
               </motion.tbody>

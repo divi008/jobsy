@@ -1,3 +1,4 @@
+import axios from 'axios';
 import React, { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useNavigate, useLocation, useParams } from "react-router-dom";
 import HomePage from "./HomePage";
@@ -6,6 +7,7 @@ import DropdownMenu from './DropdownMenu';
 import MyBets from "./MyBets";
 import ActiveBets from "./ActiveBets";
 import PageLayout from "./PageLayout";
+import UserProfilePage from "./UserProfilePage";
 import Shortlists from "./Shortlists";
 import ExpiredBets from "./ExpiredBets";
 import Leaderboard from "./Leaderboard";
@@ -14,27 +16,225 @@ import PlacementData from "./PlacementData";
 import { mockUsers } from "./mockUsers";
 import { motion } from "framer-motion";
 // Remove: import UserGuide from "./UserGuide";
+const setAuthToken = token => {
+  if (token) {
+    // Apply the token to every request header
+    axios.defaults.headers.common['x-auth-token'] = token;
+  } else {
+    // Delete the token from the header
+    delete axios.defaults.headers.common['x-auth-token'];
+  }
+};
 
-function LandingPage() {
+function LandingPage({ loadUser }) {
   const [activeTab, setActiveTab] = useState("login");
   const [showResetModal, setShowResetModal] = useState(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
-  const navigate = useNavigate();
+  const [showEmailVerificationModal, setShowEmailVerificationModal] = useState(false);
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetOtp, setResetOtp] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Handler for login form submit
-  const handleFormSubmit = (e) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    enrollmentNumber: '',
+    password: '',
+    confirmPassword: ''
+  });
+
+  const { name, email, enrollmentNumber, password, confirmPassword } = formData;
+  const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
+  
+  const onSubmit = async (e) => {
     e.preventDefault();
-    if (activeTab === "login") {
-      setShowWelcomeModal(true);
+    if (activeTab === 'signup' && password !== confirmPassword) {
+      return alert('Passwords do not match');
     }
-    // You can add sign up logic here if needed
+    
+    if (activeTab === 'signup' && !isEmailVerified) {
+      return alert('Please verify your email first');
+    }
+    
+    if (activeTab === 'signup' && (!name || !enrollmentNumber || !email || !password)) {
+      return alert('Please fill in all required fields');
+    }
+    
+    setIsLoading(true);
+    const url = activeTab === 'login' ? 'http://localhost:5000/api/auth/login' : 'http://localhost:5000/api/auth/signup';
+    const body = activeTab === 'login' ? { email, password } : { name, email, enrollmentNumber, password };
+    
+    try {
+      const res = await axios.post(url, body);
+      
+      if (activeTab === 'signup') {
+        // After successful signup, redirect to login
+        alert('Signup successful! Please login with your credentials.');
+        setActiveTab('login');
+        setFormData({ name: '', email: '', enrollmentNumber: '', password: '', confirmPassword: '' });
+        setIsEmailVerified(false);
+      } else {
+        // Login successful
+        localStorage.setItem('token', res.data.token);
+        await loadUser();
+        setShowWelcomeModal(true);
+      }
+    } catch (err) {
+      console.error(err.response ? err.response.data : err.message);
+      alert('Error: ' + (err.response ? err.response.data.msg : 'An error occurred.'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleEmailVerification = async () => {
+    if (!email) {
+      alert('Please enter an email address first');
+      return;
+    }
+    
+    if (activeTab === 'signup' && !enrollmentNumber) {
+      alert('Please enter an enrollment number first');
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      const payload = { email };
+      if (activeTab === 'signup' && enrollmentNumber) {
+        payload.enrollmentNumber = enrollmentNumber;
+      }
+      
+      const response = await axios.post('http://localhost:5000/api/auth/send-verification-email', payload);
+      if (response.data && response.data.msg) {
+        alert(response.data.msg + '\n\nFor testing: Check the backend console for the OTP.');
+      } else {
+        alert('Verification email sent! Please check your inbox.\n\nFor testing: Check the backend console for the OTP.');
+      }
+      setShowEmailVerificationModal(true);
+    } catch (err) {
+      let errorMsg = 'Failed to send verification email';
+      if (err.response && err.response.data && err.response.data.msg) {
+        errorMsg = err.response.data.msg;
+      } else if (err.message) {
+        errorMsg = err.message;
+      }
+      alert('Error: ' + errorMsg + '\n\nFor testing: Check the backend console for the OTP.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otp) {
+      alert('Please enter the OTP');
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      const response = await axios.post('http://localhost:5000/api/auth/verify-email', { email, otp });
+      setIsEmailVerified(true);
+      setShowEmailVerificationModal(false);
+      setShowOtpModal(false);
+      if (response.data && response.data.msg) {
+        alert(response.data.msg);
+      } else {
+        alert('Email verified successfully!');
+      }
+    } catch (err) {
+      let errorMsg = 'Invalid OTP';
+      if (err.response && err.response.data && err.response.data.msg) {
+        errorMsg = err.response.data.msg;
+      } else if (err.message) {
+        errorMsg = err.message;
+      }
+      alert('Error: ' + errorMsg);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSendResetOtp = async () => {
+    if (!resetEmail) {
+      alert('Please enter an email address');
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      const response = await axios.post('http://localhost:5000/api/auth/send-reset-otp', { email: resetEmail });
+      setShowOtpModal(true);
+      if (response.data && response.data.msg) {
+        alert(response.data.msg + '\n\nFor testing: Check the backend console for the OTP.');
+      } else {
+        alert('Reset OTP sent! Please check your inbox.\n\nFor testing: Check the backend console for the OTP.');
+      }
+    } catch (err) {
+      let errorMsg = 'Failed to send reset OTP';
+      if (err.response && err.response.data && err.response.data.msg) {
+        errorMsg = err.response.data.msg;
+      } else if (err.message) {
+        errorMsg = err.message;
+      }
+      alert('Error: ' + errorMsg + '\n\nFor testing: Check the backend console for the OTP.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!resetOtp || !newPassword || !confirmNewPassword) {
+      alert('Please fill in all fields');
+      return;
+    }
+    
+    if (newPassword !== confirmNewPassword) {
+      alert('Passwords do not match');
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      const response = await axios.post('http://localhost:5000/api/auth/reset-password', {
+        email: resetEmail,
+        otp: resetOtp,
+        newPassword
+      });
+      if (response.data && response.data.msg) {
+        alert(response.data.msg);
+      } else {
+        alert('Password reset successfully! Please login with your new password.');
+      }
+      setShowResetModal(false);
+      setShowOtpModal(false);
+      setResetEmail('');
+      setResetOtp('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+    } catch (err) {
+      let errorMsg = 'Failed to reset password';
+      if (err.response && err.response.data && err.response.data.msg) {
+        errorMsg = err.response.data.msg;
+      } else if (err.message) {
+        errorMsg = err.message;
+      }
+      alert('Error: ' + errorMsg);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleGetStarted = () => {
     setShowWelcomeModal(false);
-    console.log("Navigating to /home (forced reload)");
     window.location.href = "/home";
   };
+
 
   return (
     <>
@@ -122,22 +322,115 @@ function LandingPage() {
               &times;
             </button>
             <h2 className="text-3xl font-bold text-green-600 mb-6">Reset Password</h2>
-            <label className="block text-base text-gray-700 mb-2">Email</label>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-base text-gray-700 mb-2">Email</label>
+                <div className="flex gap-2">
+                  <input
+                    type="email"
+                    className="flex-1 px-4 py-2 rounded bg-slate-100 text-gray-900 border border-slate-300 focus:ring-2 focus:ring-green-400 focus:outline-none"
+                    placeholder="valar.morghulis.got21@itbhu.ac.in"
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
+                    required
+                  />
+                  <button
+                    className="bg-green-500 hover:bg-green-600 text-white font-semibold px-6 rounded transition"
+                    onClick={handleSendResetOtp}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? 'Sending...' : 'Send OTP'}
+                  </button>
+                </div>
+              </div>
+              {showOtpModal && (
+                <>
+                  <div>
+                    <label className="block text-base text-gray-700 mb-2">OTP</label>
+                    <input
+                      type="text"
+                      className="w-full px-4 py-2 rounded bg-slate-100 text-gray-900 border border-slate-300 focus:ring-2 focus:ring-green-400 focus:outline-none"
+                      placeholder="Enter OTP"
+                      value={resetOtp}
+                      onChange={(e) => setResetOtp(e.target.value)}
+                      required
+                      minLength="6"
+                      maxLength="6"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-base text-gray-700 mb-2">New Password</label>
+                    <input
+                      type="password"
+                      className="w-full px-4 py-2 rounded bg-slate-100 text-gray-900 border border-slate-300 focus:ring-2 focus:ring-green-400 focus:outline-none"
+                      placeholder="Enter new password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      required
+                      minLength="6"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-base text-gray-700 mb-2">Confirm New Password</label>
+                    <input
+                      type="password"
+                      className="w-full px-4 py-2 rounded bg-slate-100 text-gray-900 border border-slate-300 focus:ring-2 focus:ring-green-400 focus:outline-none"
+                      placeholder="Confirm new password"
+                      value={confirmNewPassword}
+                      onChange={(e) => setConfirmNewPassword(e.target.value)}
+                      required
+                      minLength="6"
+                    />
+                  </div>
+                  <button
+                    className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition"
+                    onClick={handleResetPassword}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? 'Resetting...' : 'Reset Password'}
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Email Verification Modal */}
+      {showEmailVerificationModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl p-8 shadow-lg w-full max-w-md transition-all duration-300 transform scale-95 hover:scale-100 relative z-10">
+            <button
+              className="absolute top-4 right-4 text-gray-400 text-2xl font-bold hover:text-gray-700"
+              onClick={() => setShowEmailVerificationModal(false)}
+              aria-label="Close"
+            >
+              &times;
+            </button>
+            <h2 className="text-3xl font-bold text-green-600 mb-6">Verify Your Email</h2>
+            <p className="text-gray-700 mb-4">We sent a verification code to {email}. Please enter it below to verify your email address.</p>
             <div className="flex gap-2">
               <input
-                type="email"
+                type="text"
                 className="flex-1 px-4 py-2 rounded bg-slate-100 text-gray-900 border border-slate-300 focus:ring-2 focus:ring-green-400 focus:outline-none"
-                placeholder="valar.morghulis.got21@itbhu.ac.in"
+                placeholder="Enter OTP"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                required
+                minLength="6"
+                maxLength="6"
               />
               <button
                 className="bg-green-500 hover:bg-green-600 text-white font-semibold px-6 rounded transition"
+                onClick={handleVerifyOtp}
+                disabled={isLoading}
               >
-                Send OTP
+                {isLoading ? 'Verifying...' : 'Verify Email'}
               </button>
             </div>
           </div>
         </div>
       )}
+      {/* Removed duplicate OTP-only modal to avoid confusion */}
       {/* Main Content (always rendered) */}
       <div className="min-h-screen w-full flex items-center justify-center bg-[linear-gradient(135deg,_#f8fafc,_#e2f7e1)]">
         <motion.div
@@ -187,70 +480,102 @@ function LandingPage() {
               </button>
             </div>
             {/* Form */}
-            <form className="space-y-5" onSubmit={handleFormSubmit}>
-              {activeTab === "signup" && (
-                <>
-                  <div>
-                    <label className="block text-base text-slate-400 mb-2">Full Name</label>
-                    <input
-                      type="text"
-                      className="w-full px-5 py-3 rounded-md bg-slate-100 border border-slate-300 shadow-sm focus:ring-2 focus:ring-green-400 focus:outline-none text-slate-900 text-base transition-all duration-200"
-                      placeholder="Jon Snow"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-base text-slate-400 mb-2">Enrollment Number</label>
-                    <input
-                      type="text"
-                      className="w-full px-5 py-3 rounded-md bg-slate-100 border border-slate-300 shadow-sm focus:ring-2 focus:ring-green-400 focus:outline-none text-slate-900 text-base transition-all duration-200"
-                      placeholder="12345678"
-                    />
-                  </div>
-                </>
-              )}
-              <div>
-                <label className="block text-base text-slate-400 mb-2">Email</label>
-                <div className="flex gap-2">
-                  <input
-                    type="email"
-                    className="flex-1 px-5 py-3 rounded-md bg-slate-100 border border-slate-300 shadow-sm focus:ring-2 focus:ring-green-400 focus:outline-none text-slate-900 text-base transition-all duration-200"
-                    placeholder="valar.morghulis.got21@itbhu.ac.in"
-                  />
-                  {activeTab === "signup" && (
-                    <button
-                      type="button"
-                      className="bg-green-500 hover:bg-green-600 text-white font-semibold px-4 rounded-md shadow transition"
-                    >
-                      Verify Email
-                    </button>
-                  )}
-                </div>
-              </div>
-              <div>
-                <label className="block text-base text-slate-400 mb-2">Password</label>
-                <input
-                  type="password"
-                  className="w-full px-5 py-3 rounded-md bg-slate-100 border border-slate-300 shadow-sm focus:ring-2 focus:ring-green-400 focus:outline-none text-slate-900 text-base transition-all duration-200"
-                  placeholder="********"
-                />
-              </div>
-              {activeTab === "signup" && (
-                <div>
-                  <label className="block text-base text-slate-400 mb-2">Confirm Password</label>
-                  <input
-                    type="password"
-                    className="w-full px-5 py-3 rounded-md bg-slate-100 border border-slate-300 shadow-sm focus:ring-2 focus:ring-green-400 focus:outline-none text-slate-900 text-base transition-all duration-200"
-                    placeholder="Confirm your password"
-                  />
-                </div>
-              )}
-              <button
-                type="submit"
-                className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition"
-              >
-                {activeTab === "login" ? "Login" : "Sign Up"}
-              </button>
-            </form>
+            <form className="space-y-5" onSubmit={onSubmit}>
+  {activeTab === "signup" && (
+    <>
+      <div>
+        <label className="block text-base text-slate-400 mb-2">Full Name</label>
+        <input
+          type="text"
+          className="w-full px-5 py-3 rounded-md bg-slate-100 border border-slate-300 shadow-sm focus:ring-2 focus:ring-green-400 focus:outline-none text-slate-900 text-base transition-all duration-200"
+          placeholder="Jon Snow"
+          name="name"
+          value={name}
+          onChange={onChange}
+          required
+        />
+      </div>
+      <div>
+        <label className="block text-base text-slate-400 mb-2">Enrollment Number</label>
+        <input
+          type="text"
+          className="w-full px-5 py-3 rounded-md bg-slate-100 border border-slate-300 shadow-sm focus:ring-2 focus:ring-green-400 focus:outline-none text-slate-900 text-base transition-all duration-200"
+          placeholder="12345678"
+          name="enrollmentNumber"
+          value={enrollmentNumber}
+          onChange={onChange}
+          required
+        />
+      </div>
+    </>
+  )}
+  <div>
+    <label className="block text-base text-slate-400 mb-2">Email</label>
+    <div className="flex gap-2">
+      <input
+        type="email"
+        className="flex-1 px-5 py-3 rounded-md bg-slate-100 border border-slate-300 shadow-sm focus:ring-2 focus:ring-green-400 focus:outline-none text-slate-900 text-base transition-all duration-200"
+        placeholder="valar.morghulis.got21@itbhu.ac.in"
+        name="email"
+        value={email}
+        onChange={onChange}
+        required
+      />
+      {activeTab === "signup" && (
+        <button
+          type="button"
+          className={`font-semibold px-4 rounded-md shadow transition ${
+            isEmailVerified 
+              ? 'bg-green-600 text-white' 
+              : 'bg-green-500 hover:bg-green-600 text-white'
+          }`}
+          onClick={handleEmailVerification}
+          disabled={isLoading || isEmailVerified}
+        >
+          {isLoading ? 'Verifying...' : isEmailVerified ? '✓ Verified' : 'Verify Email'}
+        </button>
+      )}
+    </div>
+    {activeTab === "signup" && isEmailVerified && (
+      <p className="text-green-600 text-sm mt-1">✓ Email verified successfully!</p>
+    )}
+  </div>
+  <div>
+    <label className="block text-base text-slate-400 mb-2">Password</label>
+    <input
+      type="password"
+      className="w-full px-5 py-3 rounded-md bg-slate-100 border border-slate-300 shadow-sm focus:ring-2 focus:ring-green-400 focus:outline-none text-slate-900 text-base transition-all duration-200"
+      placeholder="********"
+      name="password"
+      value={password}
+      onChange={onChange}
+      required
+      minLength="6"
+    />
+  </div>
+  {activeTab === "signup" && (
+    <div>
+      <label className="block text-base text-slate-400 mb-2">Confirm Password</label>
+      <input
+        type="password"
+        className="w-full px-5 py-3 rounded-md bg-slate-100 border border-slate-300 shadow-sm focus:ring-2 focus:ring-green-400 focus:outline-none text-slate-900 text-base transition-all duration-200"
+        placeholder="Confirm your password"
+        name="confirmPassword"
+        value={confirmPassword}
+        onChange={onChange}
+        required
+        minLength="6"
+      />
+    </div>
+  )}
+  <button
+    type="submit"
+    className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition"
+    disabled={isLoading}
+  >
+    {isLoading ? 'Loading...' : activeTab === "login" ? "Login" : "Sign Up"}
+  </button>
+</form>
             <div className="flex justify-end mt-3">
               <a
                 href="#"
@@ -343,18 +668,23 @@ function UserProfile({ user, bets, onUserGuide, headerUser }) {
   }
 
   // Use real bets from props
-  const filteredBets = filter === 'all' ? bets : bets.filter(b => b.status === filter);
-  const totalBets = bets.length;
-  const activeBets = bets.filter(b => b.status === 'active').length;
+  const normalizedBets = React.useMemo(() => (Array.isArray(bets) ? bets.map(b => ({...b, status: (b.status||'').toLowerCase()})) : []), [bets]);
+  const filteredBets = filter === 'all' ? normalizedBets : filter === 'expired' ? normalizedBets.filter(b => ['expired','won','lost'].includes(b.status)) : normalizedBets.filter(b => b.status === filter);
+  const totalBets = normalizedBets.length;
+  const activeBets = normalizedBets.filter(b => b.status === 'active').length;
+  const resolved = normalizedBets.filter(b => ['won','lost','expired'].includes(b.status));
+  const won = resolved.filter(b => b.status === 'won').length;
+  const successRate = resolved.length > 0 ? (won / resolved.length) * 100 : 0;
 
   // Derive initials and enrollment from user if available
   const initials = user.initials || user.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
-  const enrollment = user.enrollment || user.id;
-  const tokens = user.tokens;
-  const successRate = user.successRate || 0;
+  const enrollment = user.enrollmentNumber || user.id;
+  const tokens = user.tokens || 0;
+  const streak = (user.streak ?? user.streakCount) || 0;
+  if (!user) {return <PageLayout><div>Loading user data...</div></PageLayout>;} // Safety check 
 
   return (
-    <PageLayout user={headerUser || user} onUserGuide={onUserGuide}>
+    <PageLayout user={headerUser} onUserGuide={onUserGuide}>
       {/* Main Profile Content - now full width with header alignment */}
       <div className="w-full mt-8">
         <div className="bg-[linear-gradient(to_top_right,_#181a1b_80%,_#28c76f_20%,_#181a1b_100%)] backdrop-blur-md border border-white/10 shadow-md rounded-2xl px-8 py-8 md:py-10 flex flex-col md:flex-row md:items-center gap-6 md:gap-10 mb-8 relative w-full">
@@ -402,7 +732,7 @@ function UserProfile({ user, bets, onUserGuide, headerUser }) {
           {/* Streak */}
           <div className="relative rounded-2xl bg-[#181f1f] border-2 border-[#28c76f]/80 p-8 flex flex-col items-start justify-between w-full transition-all duration-200 hover:scale-105 hover:shadow-2xl hover:border-[#28c76f] group overflow-hidden">
             <span className="text-gray-200 text-base mb-2 flex items-center gap-2 text-left">Streak</span>
-            <span className="text-2xl font-bold text-white text-left">{Math.floor(successRate / 10)}</span>
+            <span className="text-2xl font-bold text-white text-left">{streak}</span>
             <span className="absolute top-4 right-4">
               <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#facc15" strokeWidth="2"><path d="M3 17l6-6 4 4 8-8" stroke="#facc15" strokeWidth="2" fill="none"/><circle cx="9" cy="11" r="1.5" fill="#facc15"/><circle cx="13" cy="15" r="1.5" fill="#facc15"/><circle cx="19" cy="9" r="1.5" fill="#facc15"/></svg>
             </span>
@@ -464,9 +794,9 @@ function UserProfile({ user, bets, onUserGuide, headerUser }) {
                 <tbody>
                   {filteredBets.map((bet, idx) => (
                     <tr key={idx} className="border-b-2 border-white">
-                      <td className="py-2 px-6">{bet.company}</td>
+                      <td className="py-2 px-6">{bet.companyEvent?.companyName || bet.company || '—'}</td>
                       <td className="py-2 px-6">
-                        {bet.type === '👍' ? (
+                        {bet.type === 'for' || bet.type === '👍' ? (
                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-thumbs-up w-4 h-4 sm:w-5 sm:h-5 text-blue-500"><path d="M7 10v12"></path><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"></path></svg>
                         ) : (
                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-thumbs-down w-4 h-4 sm:w-5 sm:h-5 text-red-500"><path d="M17 14V2"></path><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"></path></svg>
@@ -491,51 +821,69 @@ function UserProfile({ user, bets, onUserGuide, headerUser }) {
 
 function UserProfileWrapper(props) {
   const { userId } = useParams();
-  const user = mockUsers.find(u => u.id === userId) || mockUsers[0];
-  return <UserProfile {...props} user={user} bets={user.bets} headerUser={props.user} />;
+  const [profileData, setProfileData] = useState({ user: null, bets: [] });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        setLoading(true);
+        const [userRes, betsRes] = await Promise.all([
+          axios.get(`http://localhost:5000/api/users/profile/${userId}`),
+          axios.get(`http://localhost:5000/api/bets/user/${userId}`)
+        ]);
+        setProfileData({ user: userRes.data, bets: betsRes.data });
+      } catch (err) {
+        setError("Could not load user profile.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (userId) fetchProfileData();
+  }, [userId]);
+
+  if (loading) return <PageLayout user={props.user}><div>Loading Profile...</div></PageLayout>;
+  if (error || !profileData.user) return <PageLayout user={props.user}><div>{error || "User not found."}</div></PageLayout>;
+
+  return <UserProfile {...props} user={profileData.user} bets={profileData.bets} headerUser={props.user} />;
 }
 
-export default function App() {
-  const [tokens, setTokens] = React.useState(100000);
-  const [user, setUser] = React.useState({
-    name: 'Jon Snow',
-    email: 'valar.morghulis.got21@itbhu.ac.in',
-    initials: 'JS',
-    tokens,
-    enrollment: '21075001',
-  });
 
-  // Keep user.tokens in sync with tokens state
-  React.useEffect(() => {
-    setUser(prev => ({ ...prev, tokens }));
-  }, [tokens]);
-  const [bets, setBets] = React.useState([
-    { name: 'Jon Snow', type: '👍', amount: 1000, company: 'SquarePoint Capital', stake: '1.46x', status: 'expired' },
-    { name: 'Daenerys Targaryen', type: '👍', amount: 2000, company: 'Google', stake: '2.10x', status: 'active' },
-    { name: 'Arya Stark', type: '👍', amount: 1500, company: 'Amazon', stake: '1.80x', status: 'active' },
-    { name: 'Tyrion Lannister', type: '👎', amount: 1000, company: 'SquarePoint Capital', stake: '1.41x', status: 'expired' },
-    { name: 'Cersei Lannister', type: '👍', amount: 2500, company: 'Microsoft', stake: '2.30x', status: 'expired' },
-  ]);
-  const [showUserGuideModal, setShowUserGuideModal] = React.useState(false);
+export default function App() {
+  const [user, setUser] = useState(null);
+
+  const loadUser = async () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      setAuthToken(token);
+      try {
+        const res = await axios.get('http://localhost:5000/api/auth/me');
+        setUser(res.data);
+      } catch (err) {
+        localStorage.removeItem('token');
+      }
+    }
+  };
+
+  useEffect(() => {
+    loadUser();
+  }, []);
+
+  const [showUserGuideModal, setShowUserGuideModal] = useState(false);
   const [showAnnouncement, setShowAnnouncement] = useState(true);
   const [announcementIdx, setAnnouncementIdx] = useState(0);
-  const announcements = [
-    'Placement Season Surprise: Bet Big, Win Bigger!',
-    'Write a mail to us noreply@gmail.com',
-    'All the best for placements!'
-  ];
-  // Add state for animation
-  const [isSliding, setIsSliding] = React.useState(false);
+  const announcements = [ 'Placement Season Surprise: Bet Big, Win Bigger!', 'Write a mail to us jobsy.noreply@gmail.com', 'All the best for placements!' ];
+  const [isSliding, setIsSliding] = useState(false);
 
-  // Update useEffect for announcement change
-  React.useEffect(() => {
+  useEffect(() => {
     if (!showAnnouncement) return;
     const interval = setInterval(() => {
       setIsSliding(true);
       setTimeout(() => {
         setAnnouncementIdx(idx => (idx + 1) % announcements.length);
         setIsSliding(false);
-      }, 350); // 350ms for slide out, then change text and slide in
+      }, 350);
     }, 4000);
     return () => clearInterval(interval);
   }, [showAnnouncement, announcements.length]);
@@ -597,32 +945,48 @@ export default function App() {
       </div>
     </>
   );
-
+  const pageProps = {
+    user,
+    showUserGuideModal,
+    setShowUserGuideModal
+  };
   return (
     <BrowserRouter>
-      <AppWithRouterAnnouncementBar
-        user={user}
-        tokens={tokens}
-        setTokens={setTokens}
-        bets={bets}
-        setBets={setBets}
-        showUserGuideModal={showUserGuideModal}
-        setShowUserGuideModal={setShowUserGuideModal}
-        userGuideContent={userGuideContent}
+      <AppWithRouterAnnouncementBar 
         showAnnouncement={showAnnouncement}
         setShowAnnouncement={setShowAnnouncement}
         announcementIdx={announcementIdx}
         announcements={announcements}
         isSliding={isSliding}
-      />
+        showUserGuideModal={showUserGuideModal}
+        setShowUserGuideModal={setShowUserGuideModal}
+        userGuideContent={userGuideContent}
+      >
+        <Routes>
+          <Route path="/" element={<LandingPage loadUser={loadUser} />} />
+          {/* Pass setUser to HomePage and other pages as needed */}
+          <Route path="/home" element={<HomePage user={user} setUser={setUser} showUserGuideModal={showUserGuideModal} setShowUserGuideModal={setShowUserGuideModal} userGuideContent={userGuideContent} />} />
+          <Route path="/profile" element={<UserProfilePage user={user} onUserGuide={() => setShowUserGuideModal(true)} />} />
+          <Route path="/profile/:userId" element={<UserProfileWrapper {...pageProps} />} />
+          <Route path="/my-bets" element={<MyBets {...pageProps} userGuideContent={userGuideContent} />} />
+          <Route path="/active-bets" element={<ActiveBets {...pageProps} setUser={setUser} userGuideContent={userGuideContent} />} />
+          <Route path="/shortlists" element={<Shortlists {...pageProps} userGuideContent={userGuideContent} />} />
+          <Route path="/expired-bets" element={<ExpiredBets {...pageProps} userGuideContent={userGuideContent} />} />
+          <Route path="/leaderboard" element={<Leaderboard {...pageProps} userGuideContent={userGuideContent} />} />
+          <Route path="/admin-panel" element={<AdminPanel {...pageProps} userGuideContent={userGuideContent} />} />
+          <Route path="/placement-data" element={<PlacementData {...pageProps} userGuideContent={userGuideContent} />} />
+        </Routes>
+      </AppWithRouterAnnouncementBar>
     </BrowserRouter>
   );
 }
 function AppWithRouterAnnouncementBar(props) {
   const location = useLocation();
+  const isLoginPage = location.pathname === "/";
+  
   return (
     <>
-      {(location.pathname === '/home' || location.pathname === '/profile' || location.pathname === '/my-bets' || location.pathname === '/active-bets') && props.showAnnouncement && (
+      {props.showAnnouncement && !isLoginPage && (
         <div className="w-full bg-[#28c76f] text-[#1e1e1e] text-center py-2 font-semibold text-lg flex items-center justify-center relative z-50 overflow-hidden" style={{minHeight: '48px'}}>
           <span
             className={`mx-auto transition-all duration-300 ease-in-out inline-block
@@ -643,19 +1007,7 @@ function AppWithRouterAnnouncementBar(props) {
           </div>
         </div>
       )}
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/home" element={<HomePage {...props} />} />
-        <Route path="/profile" element={<UserProfile {...props} onUserGuide={() => props.setShowUserGuideModal(true)} />} />
-        <Route path="/profile/:userId" element={<UserProfileWrapper {...props} onUserGuide={() => props.setShowUserGuideModal(true)} />} />
-        <Route path="/my-bets" element={<MyBets {...props} />} />
-        <Route path="/active-bets" element={<ActiveBets {...props} />} />
-        <Route path="/shortlists" element={<Shortlists {...props} />} />
-        <Route path="/expired-bets" element={<ExpiredBets {...props} />} />
-        <Route path="/leaderboard" element={<Leaderboard {...props} />} />
-        <Route path="/admin-panel" element={<AdminPanel {...props} />} />
-        <Route path="/placement-data" element={<PlacementData {...props} />} />
-      </Routes>
+      {props.children}
     </>
   );
 }

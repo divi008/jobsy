@@ -21,7 +21,7 @@ function randomBet(userName) {
   };
 }
 
-export const mockUsers = gotNames.map((name, idx) => {
+const mockUsers = gotNames.map((name, idx) => {
   const id = (21075001 + idx).toString();
   // Email: jon.snow.got21@itbhu.ac.in
   const email = name.toLowerCase().replace(/[^a-z]/g, ".") + ".got21@itbhu.ac.in";
@@ -36,4 +36,6 @@ export const mockUsers = gotNames.map((name, idx) => {
     successRate,
     bets
   };
-}); 
+});
+
+export default mockUsers;

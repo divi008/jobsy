@@ -1,17 +1,51 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import axios from 'axios';
 import PageLayout from "./PageLayout";
 import { motion } from "framer-motion";
 
-export default function MyBets({ user, tokens, setTokens, bets, setBets, showUserGuideModal, setShowUserGuideModal, userGuideContent }) {
+export default function MyBets({ user, tokens, setTokens, bets, setBets, showUserGuideModal, setShowUserGuideModal, userGuideContent, showAnnouncement, setShowAnnouncement, announcementIdx, announcements, isSliding }) {
   const [filter, setFilter] = useState('all');
-  const filteredBets = filter === 'all' ? bets : bets.filter(b => b.status === filter);
-  const totalAmountBet = bets.reduce((sum, b) => sum + b.amount, 0);
-  const activeBets = bets.filter(b => b.status === 'active').length;
-  const expiredBets = bets.filter(b => b.status === 'expired').length;
-  const averageStake = bets.length ? (bets.reduce((sum, b) => sum + parseFloat(b.stake), 0) / bets.length).toFixed(2) : '0.00';
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [myBets, setMyBets] = useState([]);
+
+  useEffect(() => {
+    const fetchMyBets = async () => {
+      if (!user?._id) return;
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await axios.get(`http://localhost:5000/api/bets/user/${user._id}`);
+        const data = res.data || [];
+        setMyBets(data);
+        setBets && setBets(data);
+      } catch (err) {
+        console.error('Failed to load user bets', err);
+        setError('Could not load your bets.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMyBets();
+  }, [user?._id]);
+
+  const safeBets = Array.isArray(myBets) && myBets.length > 0 ? myBets : (Array.isArray(bets) ? bets : []);
+  const filteredBets = filter === 'all' ? safeBets : filter === 'expired' ? safeBets.filter(b => ['expired','won','lost'].includes(b.status)) : safeBets.filter(b => b.status === filter);
+  const totalAmountBet = safeBets.reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
+  const activeBets = safeBets.filter(b => b.status === 'active').length;
+  const expiredBets = safeBets.filter(b => b.status !== 'active').length;
+  const averageStake = safeBets.length ? (safeBets.reduce((sum, b) => sum + parseFloat(b.stake), 0) / safeBets.length).toFixed(2) : '0.00';
 
   return (
-    <PageLayout user={user} onUserGuide={() => setShowUserGuideModal(true)}>
+    <PageLayout
+      user={user}
+      onUserGuide={() => setShowUserGuideModal(true)}
+      showAnnouncement={showAnnouncement}
+      setShowAnnouncement={setShowAnnouncement}
+      announcementIdx={announcementIdx}
+      announcements={announcements}
+      isSliding={isSliding}
+    >
       {showUserGuideModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full relative overflow-y-auto max-h-[90vh]">
@@ -26,7 +60,7 @@ export default function MyBets({ user, tokens, setTokens, bets, setBets, showUse
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="text-5xl font-bold text-[#28c76f] mb-2 text-center"
+          className="text-3xl sm:text-5xl font-bold text-[#28c76f] mb-2 text-center"
         >
           My Bets
         </motion.h1>
@@ -34,12 +68,12 @@ export default function MyBets({ user, tokens, setTokens, bets, setBets, showUse
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
-          className="text-gray-400 text-lg mb-8 text-center"
+          className="text-gray-400 text-base sm:text-lg mb-8 text-center"
         >
           Track Your Betting Journey
         </motion.div>
         {/* Stat Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-8 w-full">
           <div className="relative rounded-2xl bg-[#181f1f] border-2 border-[#28c76f]/80 p-8 flex flex-col items-start justify-between w-full transition-all duration-200 hover:scale-105 hover:shadow-2xl hover:border-[#28c76f] group overflow-hidden">
             <span className="absolute top-4 right-4">
               {/* Dollar Icon */}
@@ -74,7 +108,7 @@ export default function MyBets({ user, tokens, setTokens, bets, setBets, showUse
           </div>
         </div>
         {/* Filter Bar */}
-        <div className="flex items-center bg-[#101615] rounded-full p-1 w-fit mb-6 mx-auto gap-2 shadow-inner">
+        <div className="flex flex-wrap items-center bg-[#101615] rounded-full p-1 w-fit mb-6 mx-auto gap-2 shadow-inner">
           <button
             onClick={() => setFilter('all')}
             className={`px-7 py-2 rounded-full font-semibold text-base transition-all duration-200 focus:outline-none
@@ -104,11 +138,15 @@ export default function MyBets({ user, tokens, setTokens, bets, setBets, showUse
         <div className="relative rounded-2xl bg-white/5 border border-white p-8 w-full overflow-hidden">
           <div className="absolute inset-0 pointer-events-none z-0 bg-[radial-gradient(circle_at_50%_50%,_rgba(40,199,111,0.10)_0%,_rgba(40,199,111,0)_80%)]" />
           <div className="text-xl font-bold text-[#6ee7b7] mb-4">Betting History</div>
-          <div className="overflow-x-auto">
-            {filteredBets.length === 0 ? (
+          <div className="overflow-x-auto w-full">
+            {loading ? (
+              <div className="text-center text-gray-400 py-12 text-lg font-semibold">Loading...</div>
+            ) : error ? (
+              <div className="text-center text-red-400 py-12 text-lg font-semibold">{error}</div>
+            ) : filteredBets.length === 0 ? (
               <div className="text-center text-gray-400 py-12 text-lg font-semibold">Nothing to show</div>
             ) : (
-              <table className="min-w-full text-left text-white">
+              <table className="min-w-full text-left text-white text-xs sm:text-sm md:text-base">
                 <thead>
                   <tr className="border-b-2 border-white/30">
                     <th className="py-2 px-6 text-[#b9ffe0] font-semibold">Candidate</th>
@@ -130,19 +168,19 @@ export default function MyBets({ user, tokens, setTokens, bets, setBets, showUse
                       variants={{ hidden: { opacity: 0, x: -40 }, visible: { opacity: 1, x: 0, transition: { duration: 0.4 } } }}
                       className="border-b-2 border-white/10"
                     >
-                      <td className="py-2 px-6">{bet.name}</td>
+                      <td className="py-2 px-6">{bet.candidate?.name || bet.name}</td>
                       <td className="py-2 px-6">
-                        {bet.type === '👍' ? (
+                        {bet.type === 'for' || bet.type === '👍' ? (
                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-thumbs-up w-4 h-4 sm:w-5 sm:h-5 text-blue-500"><path d="M7 10v12"></path><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"></path></svg>
                         ) : (
                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-thumbs-down w-4 h-4 sm:w-5 sm:h-5 text-red-500"><path d="M17 14V2"></path><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"></path></svg>
                         )}
                       </td>
                       <td className="py-2 px-6">{bet.amount}</td>
-                      <td className="py-2 px-6">{bet.company}</td>
+                      <td className="py-2 px-6">{bet.companyEvent?.companyName || bet.company}</td>
                       <td className="py-2 px-6">{bet.stake}</td>
                       <td className="py-2 px-6">
-                        <span className={`px-2 py-1 rounded text-xs ${bet.status === 'active' ? 'bg-green-900 text-green-300' : 'bg-gray-800 text-gray-300'}`}>{bet.status.charAt(0).toUpperCase() + bet.status.slice(1)}</span>
+                        <span className={`px-2 py-1 rounded text-xs ${bet.status === 'active' ? 'bg-green-900 text-green-300' : bet.status === 'won' ? 'bg-blue-900 text-blue-300' : bet.status === 'lost' ? 'bg-red-900 text-red-300' : 'bg-gray-800 text-gray-300'}`}>{bet.status.charAt(0).toUpperCase() + bet.status.slice(1)}</span>
                       </td>
                     </motion.tr>
                   ))}

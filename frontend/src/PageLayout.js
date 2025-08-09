@@ -1,25 +1,9 @@
 import React from "react";
 import HeaderNav from "./HeaderNav";
 
-function AnnouncementBar({ show, setShow, announcements, idx, isSliding }) {
-  if (!show) return null;
-  return (
-    <div className="w-full bg-[#28c76f] text-[#1e1e1e] text-center py-2 font-semibold text-lg flex items-center justify-center relative z-50 overflow-hidden" style={{minHeight: '48px'}}>
-      <span
-        className={`mx-auto transition-all duration-300 ease-in-out inline-block ${isSliding ? 'opacity-0 -translate-y-4' : 'opacity-100 translate-y-0'}`}
-        style={{willChange: 'opacity, transform'}}
-      >
-        {announcements[idx]}
-      </span>
-      <button className="absolute right-4 top-1/2 -translate-y-1/2 text-[#1e1e1e] text-2xl font-bold hover:text-[#0e7c3a] transition" onClick={() => setShow(false)} aria-label="Close announcement">&times;</button>
-    </div>
-  );
-}
-
-export default function PageLayout({ user, onUserGuide, children, showAnnouncement, setShowAnnouncement, announcementIdx, announcements, isSliding }) {
+export default function PageLayout({ user, onUserGuide, children }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-100 via-white to-green-50 text-gray-900 font-sans flex flex-col">
-      <AnnouncementBar show={showAnnouncement} setShow={setShowAnnouncement} announcements={announcements} idx={announcementIdx} isSliding={isSliding} />
       <HeaderNav user={user} onUserGuide={onUserGuide} />
       <main className="flex-1 w-full px-4 md:px-10 flex flex-col items-center justify-center py-12">
         {children}

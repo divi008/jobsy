@@ -1,51 +1,204 @@
 import React, { useState, useEffect } from "react";
 import PageLayout from "./PageLayout";
+import axios from 'axios';
 import { mockCompanies, mockCandidates, mockBets, adminCarouselCompanyIds } from "./mockData";
 import { mockUsers } from "./mockUsers";
+
+// Shared course + branch options
+const COURSE_BRANCH_OPTIONS = [
+  { course: "B.Tech", branch: "Ceramic Engineering" },
+  { course: "IDD", branch: "Ceramic Engineering" },
+  { course: "B.Tech", branch: "Chemical Engineering" },
+  { course: "B.Tech", branch: "Civil Engineering" },
+  { course: "IDD", branch: "Civil Engineering" },
+  { course: "B.Tech", branch: "Computer Science and Engineering" },
+  { course: "IDD", branch: "Computer Science and Engineering" },
+  { course: "B.Tech", branch: "Electrical Engineering" },
+  { course: "IDD", branch: "Electrical Engineering" },
+  { course: "B.Tech", branch: "Electronics Engineering" },
+  { course: "B.Tech", branch: "Mechanical Engineering" },
+  { course: "IDD", branch: "Mechanical Engineering" },
+  { course: "B.Tech", branch: "Metallurgical & Materials Engineering" },
+  { course: "IDD", branch: "Metallurgical & Materials Engineering" },
+  { course: "B.Tech", branch: "Mining Engineering" },
+  { course: "IDD", branch: "Mining Engineering" },
+  { course: "B.Tech", branch: "Pharmaceutical Engineering & Technology" },
+  { course: "IDD", branch: "Pharmaceutical Engineering & Technology" },
+  { course: "IDD", branch: "Engineering Physics" },
+  { course: "IDD", branch: "Biochemical Engineering" },
+  { course: "IDD", branch: "Biomedical Engineering" },
+  { course: "IDD", branch: "Materials Science and Technology" },
+  { course: "IDD", branch: "Decision Science and Engineering" },
+  { course: "B.Arch", branch: "Architecture" }
+];
+
+// Edit Candidate Modal Component
+function EditCandidateModal({ open, onClose, onSubmit, candidate }) {
+  const [formData, setFormData] = useState({
+    name: '',
+    enrollmentNumber: '',
+    course: '',
+    branch: '',
+    email: ''
+  });
+
+  useEffect(() => {
+    if (candidate) {
+      setFormData({
+        name: candidate.name || '',
+        enrollmentNumber: candidate.enrollmentNumber || '',
+        course: candidate.course || '',
+        branch: candidate.branch || '',
+        email: candidate.email || ''
+      });
+    }
+  }, [candidate]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.name || !formData.enrollmentNumber || !formData.course || !formData.branch) {
+      alert('Please fill in all required fields');
+      return;
+    }
+    onSubmit(formData);
+  };
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-[#181f1f] rounded-2xl shadow-2xl border-2 border-[#28c76f]/40 max-w-md w-full">
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-[#28c76f] flex items-center gap-2">
+              <span>✏️</span> Edit Candidate
+            </h2>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-white text-2xl font-bold"
+            >
+              ×
+            </button>
+          </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-gray-300 text-sm font-bold mb-2">Name *</label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                className="w-full bg-[#232b2b] border border-[#28c76f]/30 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-[#28c76f]"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-gray-300 text-sm font-bold mb-2">Enrollment Number *</label>
+              <input
+                type="text"
+                value={formData.enrollmentNumber}
+                onChange={(e) => setFormData({...formData, enrollmentNumber: e.target.value})}
+                className="w-full bg-[#232b2b] border border-[#28c76f]/30 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-[#28c76f]"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-gray-300 text-sm font-bold mb-2">Course *</label>
+              <select
+                value={formData.course}
+                onChange={(e) => {
+                  setFormData({...formData, course: e.target.value, branch: ''});
+                }}
+                className="w-full bg-[#232b2b] border border-[#28c76f]/30 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-[#28c76f]"
+                required
+              >
+                <option value="">Select Course</option>
+                <option value="B.Tech">B.Tech</option>
+                <option value="IDD">IDD</option>
+                <option value="M.Tech">M.Tech</option>
+                <option value="Ph.D">Ph.D</option>
+                <option value="B.Arch">B.Arch</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-gray-300 text-sm font-bold mb-2">Branch *</label>
+              <select
+                value={formData.branch}
+                onChange={(e) => setFormData({...formData, branch: e.target.value})}
+                className="w-full bg-[#232b2b] border border-[#28c76f]/30 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-[#28c76f]"
+                required
+                disabled={!formData.course}
+              >
+                <option value="">Select Branch</option>
+                {COURSE_BRANCH_OPTIONS.filter(option => option.course === formData.course).map(option => (
+                  <option key={`${option.course}-${option.branch}`} value={option.branch}>
+                    {option.branch}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-gray-300 text-sm font-bold mb-2">Email</label>
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                className="w-full bg-[#232b2b] border border-[#28c76f]/30 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-[#28c76f]"
+              />
+            </div>
+            <div className="flex justify-end gap-3 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="bg-gray-500 hover:bg-gray-600 text-white font-bold px-6 py-2 rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="bg-[#28c76f] hover:bg-[#22b36a] text-white font-bold px-6 py-2 rounded-lg"
+              >
+                Update Candidate
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // Add Individual Modal Component
 function AddIndividualModal({ open, onClose, onSubmit }) {
   const [formData, setFormData] = useState({
     name: '',
     enrollment: '',
+    course: '',
     branch: '',
     email: ''
   });
   const [duplicateWarning, setDuplicateWarning] = useState(null);
   const [isChecking, setIsChecking] = useState(false);
 
-  const branches = [
-    "B.Tech. (Ceramic Engineering)",
-    "IDD (Ceramic Engineering)",
-    "B.Tech. (Chemical Engineering)",
-    "B.Tech. (Civil Engineering)",
-    "IDD (Civil Engineering)",
-    "B.Tech. (Computer Science and Engineering)",
-    "IDD (Computer Science and Engineering)",
-    "B.Tech. (Electrical Engineering)",
-    "IDD (Electrical Engineering)",
-    "B.Tech. (Electronics Engineering)",
-    "B.Tech. (Mechanical Engineering)",
-    "IDD (Mechanical Engineering)",
-    "B.Tech. (Metallurgical & Materials Engineering)",
-    "IDD (Metallurgical & Materials Engineering)",
-    "B.Tech. (Mining Engineering)",
-    "IDD (Mining Engineering)",
-    "B.Tech. (Pharmaceutical Engineering & Technology)",
-    "IDD (Pharmaceutical Engineering & Technology)",
-    "IDD (Engineering Physics)",
-    "IDD (Biochemical Engineering)",
-    "IDD (Biomedical Engineering)",
-    "IDD (Materials Science and Technology)",
-    "IDD (Decision Science and Engineering)",
-    "B.Arch. (Architecture)"
-  ];
-
-  const checkForDuplicates = (name, enrollment, email) => {
+  const checkForDuplicates = async (name, enrollment, email) => {
     setIsChecking(true);
     const duplicates = [];
 
-    // Check in mockCandidates - only check enrollment numbers
+    try {
+      // Check in backend candidates
+      if (enrollment.trim()) {
+        const res = await axios.post('http://localhost:5000/api/candidates/lookup', { enrollmentNumber: enrollment }, {
+          headers: { 'x-auth-token': localStorage.getItem('token') || '' }
+        });
+        if (res.data) {
+          duplicates.push({
+            type: 'Candidate',
+            data: res.data,
+            reason: 'Enrollment found in database'
+          });
+        }
+      }
+    } catch (err) {
+      // If not found in backend, check mock data
     if (enrollment.trim()) {
       const candidateEnrollmentMatch = mockCandidates.find(c => 
         c.enrollment === enrollment
@@ -70,6 +223,7 @@ function AddIndividualModal({ open, onClose, onSubmit }) {
           data: userEnrollmentMatch,
           reason: 'Enrollment'
         });
+        }
       }
     }
 
@@ -77,6 +231,7 @@ function AddIndividualModal({ open, onClose, onSubmit }) {
     const uniqueDuplicates = duplicates.filter((dup, index, self) => 
       index === self.findIndex(d => 
         (d.data.enrollment && d.data.enrollment === dup.data.enrollment) ||
+        (d.data.enrollmentNumber && d.data.enrollmentNumber === dup.data.enrollmentNumber) ||
         (d.data.id && d.data.id === dup.data.id)
       )
     );
@@ -85,29 +240,90 @@ function AddIndividualModal({ open, onClose, onSubmit }) {
     setIsChecking(false);
   };
 
-  const handleInputChange = (field, value) => {
+  const handleInputChange = async (field, value) => {
+    if (field === 'courseBranch') {
+      // Handle course+branch selection
+      const selectedOption = COURSE_BRANCH_OPTIONS.find(b => `${b.course} (${b.branch})` === value);
+      if (selectedOption) {
+        setFormData(prev => ({
+          ...prev,
+          course: selectedOption.course,
+          branch: selectedOption.branch
+        }));
+      }
+    } else {
     setFormData(prev => ({ ...prev, [field]: value }));
-    
-    // Check for duplicates when enrollment changes
-    if (field === 'enrollment') {
-      const newData = { ...formData, [field]: value };
-      // Check for duplicates if we have the enrollment field
-      if (newData[field] && newData[field].trim()) {
-        checkForDuplicates(newData.name || '', newData.enrollment || '', newData.email || '');
+    }
+
+    // Auto-fill data when enrollment changes
+    if (field === 'enrollment' && value.trim()) {
+      try {
+        const res = await axios.post('http://localhost:5000/api/candidates/lookup', { enrollmentNumber: value }, {
+          headers: { 'x-auth-token': localStorage.getItem('token') || '' }
+        });
+        if (res.data) {
+          // Auto-fill from backend data
+          setFormData(prev => ({
+            ...prev,
+            name: res.data.name || prev.name,
+            course: res.data.course || prev.course,
+            branch: res.data.branch || prev.branch,
+            email: res.data.email || prev.email
+          }));
+          setDuplicateWarning([{
+            type: 'Candidate',
+            data: res.data,
+            reason: 'Enrollment found in database - data auto-filled'
+          }]);
+        } else {
+          // Check mock data as fallback
+          const candidateEnrollmentMatch = mockCandidates.find(c => c.enrollment === value);
+          if (candidateEnrollmentMatch) {
+            setFormData(prev => ({
+              ...prev,
+              name: candidateEnrollmentMatch.name || prev.name,
+              course: candidateEnrollmentMatch.course || prev.course,
+              branch: candidateEnrollmentMatch.branch || prev.branch
+            }));
+            setDuplicateWarning([{
+              type: 'Candidate',
+              data: candidateEnrollmentMatch,
+              reason: 'Enrollment found in mock data - data auto-filled'
+            }]);
       } else {
         setDuplicateWarning(null);
+          }
+        }
+      } catch (err) {
+        // Check mock data as fallback
+        const candidateEnrollmentMatch = mockCandidates.find(c => c.enrollment === value);
+        if (candidateEnrollmentMatch) {
+          setFormData(prev => ({
+            ...prev,
+            name: candidateEnrollmentMatch.name || prev.name,
+            course: candidateEnrollmentMatch.course || prev.course,
+            branch: candidateEnrollmentMatch.branch || prev.branch
+          }));
+          setDuplicateWarning([{
+            type: 'Candidate',
+            data: candidateEnrollmentMatch,
+            reason: 'Enrollment found in mock data - data auto-filled'
+          }]);
+        } else {
+          setDuplicateWarning(null);
+        }
       }
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (duplicateWarning && duplicateWarning.length > 0) {
+    if (duplicateWarning && duplicateWarning.length > 0 && !duplicateWarning[0].reason.includes('found in database')) {
       alert('Please resolve duplicate entries before adding the individual.');
       return;
     }
     onSubmit(formData);
-    setFormData({ name: '', enrollment: '', branch: '', email: '' });
+    setFormData({ name: '', enrollment: '', course: '', branch: '', email: '' });
     setDuplicateWarning(null);
   };
 
@@ -161,16 +377,18 @@ function AddIndividualModal({ open, onClose, onSubmit }) {
             </div>
 
             <div>
-              <label className="block text-[#28c76f] font-bold mb-2">Branch *</label>
+              <label className="block text-[#28c76f] font-bold mb-2">Course & Branch *</label>
               <select
-                value={formData.branch}
-                onChange={(e) => handleInputChange('branch', e.target.value)}
+                value={`${formData.course} (${formData.branch})`}
+                onChange={(e) => handleInputChange('courseBranch', e.target.value)}
                 className="w-full bg-[#0f1414] border-2 border-[#28c76f]/40 rounded-lg px-4 py-3 text-white focus:border-[#28c76f] focus:outline-none"
                 required
               >
-                <option value="">Select Branch</option>
-                {branches.map(branch => (
-                  <option key={branch} value={branch}>{branch}</option>
+                <option value="">Select Course & Branch</option>
+                {COURSE_BRANCH_OPTIONS.map((branch, index) => (
+                  <option key={index} value={`${branch.course} (${branch.branch})`}>
+                    {branch.course} ({branch.branch})
+                  </option>
                 ))}
               </select>
             </div>
@@ -201,25 +419,17 @@ function AddIndividualModal({ open, onClose, onSubmit }) {
             )}
 
             {duplicateWarning && duplicateWarning.length > 0 && (
-              <div className="bg-red-500/20 border border-red-500/40 rounded-lg p-4">
-                <div className="text-red-400 font-bold mb-2 flex items-center gap-2">
-                  <span>⚠️</span> Duplicate Found!
+              <div className={`${duplicateWarning[0].reason.includes('found in database') ? 'bg-green-500/20 border-green-500/40' : 'bg-red-500/20 border-red-500/40'} border rounded-lg p-4`}>
+                <div className={`${duplicateWarning[0].reason.includes('found in database') ? 'text-green-400' : 'text-red-400'} font-bold mb-2 flex items-center gap-2`}>
+                  <span>{duplicateWarning[0].reason.includes('found in database') ? '✅' : '⚠️'}</span> 
+                  {duplicateWarning[0].reason.includes('found in database') ? 'Data Auto-filled!' : 'Duplicate Found!'}
                 </div>
-                <div className="text-red-300 text-sm space-y-2">
                   {duplicateWarning.map((dup, idx) => (
-                    <div key={idx} className="bg-red-500/10 p-2 rounded">
-                      <div className="font-semibold">{dup.type}: {dup.data.name}</div>
-                      <div className="text-xs opacity-80">
-                        {dup.reason}: {dup.reason === 'Name' ? dup.data.name :
-                                      dup.reason === 'Enrollment' ? dup.data.enrollment || dup.data.id :
-                                      dup.data.email}
-                      </div>
+                  <div key={idx} className="text-sm">
+                    <div className="font-semibold">{dup.type}: {dup.data.name || dup.data.id}</div>
+                    <div className="text-gray-300">{dup.reason}</div>
                     </div>
                   ))}
-                </div>
-                <div className="text-red-200 text-xs mt-2">
-                  Please use a different name, enrollment number, or email address.
-                </div>
               </div>
             )}
 
@@ -227,14 +437,13 @@ function AddIndividualModal({ open, onClose, onSubmit }) {
               <button
                 type="button"
                 onClick={handleClose}
-                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg transition-colors"
+                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg transition"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                disabled={duplicateWarning && duplicateWarning.length > 0}
-                className="flex-1 bg-[#28c76f] hover:bg-[#22b36a] disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition-colors"
+                className="flex-1 bg-[#28c76f] hover:bg-[#22b36a] text-white font-bold py-3 px-4 rounded-lg transition"
               >
                 Add Individual
               </button>
@@ -455,188 +664,133 @@ function AddCompanyModal({ open, onClose, onSubmit }) {
 }
 
 function EditCompanyModal({ open, onClose, onSubmit, company, onRefresh }) {
-  const [companyName, setCompanyName] = useState(company?.name || "");
-  const [profile, setProfile] = useState(company?.role || "");
-  const [expiresOn, setExpiresOn] = useState(company?.expiresOn || "");
-  const [logoUrl, setLogoUrl] = useState(company?.logoUrl || "");
+  const [companyName, setCompanyName] = useState(company?.name || company?.companyName || "");
+  const [profile, setProfile] = useState(company?.role || company?.jobProfile || "");
+  const [expiresOn, setExpiresOn] = useState(company?.expiresOn || (company?.expiresAt ? new Date(company.expiresAt).toISOString().slice(0,10) : ""));
+  const [logoUrl, setLogoUrl] = useState(company?.logoUrl || company?.companyLogo || "");
   const [liveEventSection, setLiveEventSection] = useState(company?.liveEventSection || "");
   const [status, setStatus] = useState(company?.status || "active");
   const [candidates, setCandidates] = useState([]);
-  const [newCandidate, setNewCandidate] = useState({ name: '', enrollment: '', course: '', branch: '', forTokens: 0, againstTokens: 0 });
-  const [duplicateWarning, setDuplicateWarning] = useState(null);
+  const [newCandidate, setNewCandidate] = useState({
+    name: '',
+    enrollment: '',
+    branch: '',
+    course: 'B.Tech'
+  });
 
   useEffect(() => {
     if (company) {
-      setCompanyName(company.name || "");
-      setProfile(company.role || "");
-      setExpiresOn(company.expiresOn || "");
-      setLogoUrl(company.logo || "");
+      setCompanyName(company.name || company.companyName || "");
+      setProfile(company.role || company.jobProfile || "");
+      setExpiresOn(company.expiresOn || (company.expiresAt ? new Date(company.expiresAt).toISOString().slice(0,10) : ""));
+      setLogoUrl(company.logo || company.companyLogo || "");
       setLiveEventSection(company.liveEventSection || "");
-      
-      // Determine status based on whether results are declared
-      const hasResultsDeclared = company.candidates && company.candidates.some(c => c.result !== 'awaited');
-      setStatus(hasResultsDeclared ? 'expired' : 'active');
-      
-      // Load candidates for this company with proper names and details
-      const companyCandidates = (company.shortlist || []).map(candidateId => {
-        const candidate = mockCandidates.find(c => c.id === candidateId);
-        const existingResult = company.candidates?.find(c => c.enrollment === candidate?.enrollment)?.result || 'awaited';
-        return {
-          enrollment: candidate?.enrollment || candidateId,
-          name: candidate?.name || candidateId,
-          branch: candidate?.branch || 'N/A',
-          result: existingResult
-        };
-      });
-      setCandidates(companyCandidates);
+      setStatus(company.status || 'active');
+
+      // Backend provides populated candidates array
+      const backendCands = (company.candidates || []).map(c => ({
+        id: c._id || c.id,
+        name: c.name,
+        enrollment: c.enrollmentNumber || c.enrollment,
+        branch: c.branch || 'N/A',
+        course: c.course || 'B.Tech',
+        result: c.result || (company.status === 'pending' ? 'awaited' : 'not_selected')
+      }));
+      setCandidates(backendCands);
     }
   }, [company]);
 
-  function handleResultChange(enrollment, result) {
-    setCandidates(prev => prev.map(c => 
-      c.enrollment === enrollment ? { ...c, result } : c
-    ));
-  }
-
-  function handleNewCandidateChange(field, value) {
+  const handleNewCandidateChange = async (field, value) => {
     setNewCandidate(prev => ({ ...prev, [field]: value }));
     
-    // Auto-fill existing data when enrollment matches
+    // Auto-fill data when enrollment changes
     if (field === 'enrollment' && value.trim()) {
-      // Check in global candidates
-      const existingCandidate = mockCandidates.find(c => c.enrollment === value);
-      if (existingCandidate) {
-        // Extract course and branch from combined format
-        const branchParts = existingCandidate.branch.split('(');
-        const course = branchParts[0]?.trim() || '';
-        const branch = branchParts[1]?.replace(')', '') || existingCandidate.branch;
-        
+      try {
+        const res = await axios.post('http://localhost:5000/api/candidates/lookup', { enrollmentNumber: value }, {
+          headers: { 'x-auth-token': localStorage.getItem('token') || '' }
+        });
+        if (res.data) {
+          // Auto-fill from backend data
         setNewCandidate(prev => ({
           ...prev,
-          name: existingCandidate.name,
-          course: course,
-          branch: branch,
-          enrollment: value
-        }));
-        setDuplicateWarning('Candidate found in database. Details auto-filled.');
-        return;
-      }
-      
-      // Check in global users
-      const existingUser = mockUsers.find(u => u.id === value);
-      if (existingUser) {
+            name: res.data.name || prev.name,
+            branch: res.data.branch || prev.branch,
+            course: res.data.course || 'B.Tech'
+          }));
+        } else {
+          // Check mock data as fallback
+          const candidateEnrollmentMatch = mockCandidates.find(c => c.enrollment === value);
+          if (candidateEnrollmentMatch) {
         setNewCandidate(prev => ({
           ...prev,
-          name: existingUser.name,
-          enrollment: value
-        }));
-        setDuplicateWarning('User found in database. Name auto-filled.');
-        return;
+              name: candidateEnrollmentMatch.name || prev.name,
+              branch: candidateEnrollmentMatch.branch || prev.branch
+            }));
+          }
+        }
+      } catch (err) {
+        // Check mock data as fallback
+        const candidateEnrollmentMatch = mockCandidates.find(c => c.enrollment === value);
+        if (candidateEnrollmentMatch) {
+          setNewCandidate(prev => ({
+            ...prev,
+            name: candidateEnrollmentMatch.name || prev.name,
+            branch: candidateEnrollmentMatch.branch || prev.branch
+          }));
+        }
       }
     }
-    
-    // Duplicate detection in current shortlist - only check enrollment numbers
-    if (field === 'enrollment') {
-      const enrollmentExists = candidates.some(c => c.enrollment === value);
-      if (enrollmentExists) {
-        setDuplicateWarning('Candidate with this enrollment number already exists in the shortlist.');
-      } else {
-        setDuplicateWarning(null);
-      }
-    }
-  }
+  };
 
-  function handleAddCandidateInline() {
-    if (!newCandidate.name || !newCandidate.enrollment || !newCandidate.course || !newCandidate.branch) return;
-    if (duplicateWarning && !duplicateWarning.includes('found in database')) return;
-    
-    // Combine course and branch into "Course (Branch)" format
-    let combinedBranch = "";
-    if (newCandidate.course && newCandidate.branch) {
-      combinedBranch = `${newCandidate.course} (${newCandidate.branch})`;
-    } else if (newCandidate.course) {
-      combinedBranch = newCandidate.course;
-    } else if (newCandidate.branch) {
-      combinedBranch = newCandidate.branch;
-    } else {
-      combinedBranch = "Unknown";
+  const handleAddCandidateInline = async () => {
+    if (!newCandidate.name || !newCandidate.enrollment || !newCandidate.branch || !newCandidate.course) {
+      alert('Please fill all required fields');
+      return;
     }
-    
-    // Add to global candidates if not present
-    let candidate = mockCandidates.find(c => c.enrollment === newCandidate.enrollment);
-    if (!candidate) {
-      candidate = {
-        id: `cand${mockCandidates.length + 1}`,
+
+    try {
+      const res = await axios.post(`http://localhost:5000/api/admin/companies/${company.id || company._id}/candidates`, {
+        name: newCandidate.name,
+        enrollmentNumber: newCandidate.enrollment,
+        branch: newCandidate.branch,
+        course: newCandidate.course
+      }, { headers: { 'x-auth-token': localStorage.getItem('token') || '' } });
+
+      // Add to local state
+      const addedCandidate = {
+        id: res.data._id || res.data.id,
         name: newCandidate.name,
         enrollment: newCandidate.enrollment,
-        branch: combinedBranch,
-        shortlistedIn: [company.id]
+        branch: newCandidate.branch,
+        course: newCandidate.course,
+        result: status === 'pending' ? 'awaited' : 'not_selected'
       };
-      mockCandidates.push(candidate);
-    } else {
-      // Update existing candidate's branch if provided
-      if (combinedBranch !== "Unknown") {
-        candidate.branch = combinedBranch;
-      }
-      if (!candidate.shortlistedIn.includes(company.id)) {
-        candidate.shortlistedIn.push(company.id);
-      }
-    }
-    
-    // Add to global users if not present
-    let user = mockUsers.find(u => u.id === newCandidate.enrollment);
-    if (!user) {
-      mockUsers.push({
-        id: newCandidate.enrollment,
-        name: newCandidate.name,
-        email: newCandidate.name.toLowerCase().replace(/[^a-z]/g, ".") + ".got21@itbhu.ac.in",
-        tokens: 100000,
-        successRate: 75,
-        bets: []
+      setCandidates(prev => [...prev, addedCandidate]);
+      
+      // Reset form
+      setNewCandidate({
+        name: '',
+        enrollment: '',
+        branch: '',
+        course: 'B.Tech'
       });
+      
+      alert('✅ Candidate added to shortlist');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to add candidate');
     }
-    
-    // Update company's shortlist to include the new candidate
-    if (!company.shortlist.includes(candidate.id)) {
-      company.shortlist.push(candidate.id);
-    }
-    
-    // Add to this company's candidates list if not present
-    setCandidates(prev => [
-      ...prev,
-      {
-        enrollment: newCandidate.enrollment,
-        name: newCandidate.name,
-        branch: combinedBranch,
-        forTokens: newCandidate.forTokens,
-        againstTokens: newCandidate.againstTokens,
-        result: 'awaited'
-      }
-    ]);
-    
-    // Force refresh to update betting cards and other components
-    if (onRefresh) {
-      onRefresh();
-    }
-    
-    setNewCandidate({ name: '', enrollment: '', course: '', branch: '', forTokens: 0, againstTokens: 0 });
-    setDuplicateWarning(null);
-  }
+  };
 
   function handleSubmit() {
-    // Check if any candidate has been selected or not selected
-    const hasResults = candidates.some(c => c.result !== 'awaited');
-    const newStatus = hasResults ? 'expired' : status;
-    
     onSubmit({ 
-      id: company.id,
+      id: company.id || company._id,
       name: companyName, 
       role: profile, 
       expiresOn, 
       logoUrl, 
       liveEventSection,
-      status: newStatus,
-      candidates: candidates
+      status: status
     });
     onClose();
   }
@@ -644,11 +798,7 @@ function EditCompanyModal({ open, onClose, onSubmit, company, onRefresh }) {
   if (!open) return null;
   return (
     <>
-      <AddIndividualModal 
-        open={false} // This modal is no longer used for inline adding
-        onClose={() => {}}
-        onSubmit={() => {}}
-      />
+      <AddIndividualModal open={false} onClose={() => {}} onSubmit={() => {}} />
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in p-4">
         <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl relative border-2 border-[#28c76f] p-6 md:p-8"
           style={{
@@ -660,15 +810,6 @@ function EditCompanyModal({ open, onClose, onSubmit, company, onRefresh }) {
           }}>
         <button className="absolute top-4 right-4 text-gray-400 text-2xl font-bold hover:text-[#28c76f]" onClick={onClose}>&times;</button>
         <h2 className="text-3xl font-bold text-[#28c76f] mb-4">Edit Company</h2>
-        {/* Add Individual Button */}
-        <div className="flex justify-end mb-2">
-          <button className="bg-purple-500 hover:bg-purple-600 text-white font-bold px-4 py-2 rounded-lg flex items-center gap-2 text-base shadow" onClick={() => {
-            // This button is no longer needed for inline adding
-            // setShowAddIndividualModal(true); 
-          }}>
-            <span className="text-xl">👤</span> Add Individual
-          </button>
-        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
             <label className="block text-white mb-1">Company Name</label>
@@ -714,25 +855,84 @@ function EditCompanyModal({ open, onClose, onSubmit, company, onRefresh }) {
           </div>
         </div>
 
-        {/* Candidates Section */}
-        <h3 className="text-xl font-bold text-[#28c76f] mb-2 mt-4">Shortlisted Candidates</h3>
-        <div className="bg-[#232b2b] rounded-xl p-4 border border-[#28c76f]/30 mb-4 shadow-inner max-h-60 overflow-y-auto">
-          <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-4 text-white font-semibold">
-            <input className="bg-[#181f1f] border border-[#28c76f]/30 rounded-lg px-3 py-2 text-white" placeholder="Name" value={newCandidate.name} onChange={e => handleNewCandidateChange('name', e.target.value)} />
-            <input className="bg-[#181f1f] border border-[#28c76f]/30 rounded-lg px-3 py-2 text-white" placeholder="Enrollment" value={newCandidate.enrollment} onChange={e => handleNewCandidateChange('enrollment', e.target.value)} />
-            <select className="bg-[#181f1f] border border-[#28c76f]/30 rounded-lg px-3 py-2 text-white" value={newCandidate.course} onChange={e => handleNewCandidateChange('course', e.target.value)}>
-              <option value="">Select Course</option>
-              <option value="B.Tech">B.Tech</option>
-              <option value="IDD">IDD</option>
-              <option value="M.Tech">M.Tech</option>
-              <option value="M.Sc">M.Sc</option>
-              <option value="B.Sc">B.Sc</option>
-              <option value="PhD">PhD</option>
+        {/* Add New Candidate Section */}
+        <h3 className="text-xl font-bold text-[#28c76f] mb-2 mt-4">Add New Candidate</h3>
+        <div className="bg-[#232b2b] rounded-xl p-4 border border-[#28c76f]/30 mb-4 shadow-inner">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <input 
+              className="bg-[#181f1f] border border-[#28c76f]/30 rounded-lg px-3 py-2 text-white" 
+              placeholder="Name" 
+              value={newCandidate.name} 
+              onChange={e => handleNewCandidateChange('name', e.target.value)} 
+            />
+            <input 
+              className="bg-[#181f1f] border border-[#28c76f]/30 rounded-lg px-3 py-2 text-white" 
+              placeholder="Enrollment" 
+              value={newCandidate.enrollment} 
+              onChange={e => handleNewCandidateChange('enrollment', e.target.value)} 
+            />
+            <select 
+              className="bg-[#181f1f] border border-[#28c76f]/30 rounded-lg px-3 py-2 text-white" 
+              value={`${newCandidate.course} (${newCandidate.branch})`}
+              onChange={e => {
+                const selectedOption = COURSE_BRANCH_OPTIONS.find(b => `${b.course} (${b.branch})` === e.target.value);
+                if (selectedOption) {
+                  setNewCandidate(prev => ({
+                    ...prev,
+                    course: selectedOption.course,
+                    branch: selectedOption.branch
+                  }));
+                }
+              }}
+            >
+              <option value="">Select Course & Branch</option>
+              {COURSE_BRANCH_OPTIONS.map((branch, index) => (
+                <option key={index} value={`${branch.course} (${branch.branch})`}>
+                  {branch.course} ({branch.branch})
+                </option>
+              ))}
             </select>
-            <select className="bg-[#181f1f] border border-[#28c76f]/30 rounded-lg px-3 py-2 text-white" value={newCandidate.branch} onChange={e => handleNewCandidateChange('branch', e.target.value)} disabled={!newCandidate.course}>
-              <option value="">Select Branch</option>
-              {newCandidate.course && (
-                <>
+          </div>
+          <button 
+            className="bg-[#28c76f] hover:bg-[#22b36a] text-white font-bold px-4 py-2 rounded-lg" 
+            onClick={handleAddCandidateInline}
+            disabled={!newCandidate.name || !newCandidate.enrollment || !newCandidate.branch || !newCandidate.course}
+          >
+            Add to Shortlist
+          </button>
+        </div>
+
+        {/* Existing Candidates Section */}
+        <h3 className="text-xl font-bold text-[#28c76f] mb-2 mt-4">Shortlisted Candidates</h3>
+        <div className="bg-[#232b2b] rounded-xl p-4 border border-[#28c76f]/30 mb-4 shadow-inner max-h-80 overflow-y-auto">
+          {candidates.length === 0 ? (
+            <div className="text-gray-400 text-center py-4">No candidates shortlisted</div>
+          ) : (
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-4 text-white font-semibold">
+              <div>Name</div>
+              <div>Enrollment</div>
+              <div>Course</div>
+              <div>Branch</div>
+              <div>Verdict</div>
+              <div>Actions</div>
+            </div>
+          )}
+          {candidates.map((candidate, idx) => (
+            <div key={idx} className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-3 p-3 bg-[#181f1f] rounded-lg">
+              <input className="bg-[#232b2b] border border-[#28c76f]/30 rounded-lg px-3 py-2 text-white" value={candidate.name}
+                onChange={e => setCandidates(prev => prev.map((c, i) => i === idx ? { ...c, name: e.target.value } : c))} />
+              <input className="bg-[#232b2b] border border-[#28c76f]/30 rounded-lg px-3 py-2 text-white" value={candidate.enrollment}
+                onChange={e => setCandidates(prev => prev.map((c, i) => i === idx ? { ...c, enrollment: e.target.value } : c))} />
+              <select className="bg-[#232b2b] border border-[#28c76f]/30 rounded-lg px-3 py-2 text-white" value={candidate.course || 'B.Tech'}
+                onChange={e => setCandidates(prev => prev.map((c, i) => i === idx ? { ...c, course: e.target.value } : c))}>
+              <option value="B.Tech">B.Tech</option>
+              <option value="M.Tech">M.Tech</option>
+              <option value="PhD">PhD</option>
+                <option value="IDD">IDD</option>
+                <option value="B.Arch">B.Arch</option>
+            </select>
+              <select className="bg-[#232b2b] border border-[#28c76f]/30 rounded-lg px-3 py-2 text-white" value={candidate.branch}
+                onChange={e => setCandidates(prev => prev.map((c, i) => i === idx ? { ...c, branch: e.target.value } : c))}>
                   <option value="Ceramic Engineering">Ceramic Engineering</option>
                   <option value="Chemical Engineering">Chemical Engineering</option>
                   <option value="Civil Engineering">Civil Engineering</option>
@@ -749,43 +949,52 @@ function EditCompanyModal({ open, onClose, onSubmit, company, onRefresh }) {
                   <option value="Materials Science and Technology">Materials Science and Technology</option>
                   <option value="Decision Science and Engineering">Decision Science and Engineering</option>
                   <option value="Architecture">Architecture</option>
-                </>
-              )}
             </select>
-            <input className="bg-[#181f1f] border border-[#28c76f]/30 rounded-lg px-3 py-2 text-white" placeholder="For Tokens" type="number" value={newCandidate.forTokens} onChange={e => handleNewCandidateChange('forTokens', e.target.value)} />
-            <input className="bg-[#181f1f] border border-[#28c76f]/30 rounded-lg px-3 py-2 text-white" placeholder="Against Tokens" type="number" value={newCandidate.againstTokens} onChange={e => handleNewCandidateChange('againstTokens', e.target.value)} />
-            <button className="bg-[#28c76f] hover:bg-[#22b36a] text-white font-bold px-3 py-2 rounded-lg" onClick={handleAddCandidateInline} disabled={(duplicateWarning && !duplicateWarning.includes('found in database')) || !newCandidate.name || !newCandidate.enrollment || !newCandidate.course || !newCandidate.branch}>Add</button>
-          </div>
-                      {duplicateWarning && (
-              <div className={`mb-2 ${duplicateWarning.includes('found in database') ? 'text-green-400' : 'text-red-400'}`}>
-                {duplicateWarning}
-              </div>
-            )}
-          {candidates.length === 0 ? (
-            <div className="text-gray-400 text-center py-4">No candidates shortlisted</div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 text-white font-semibold">
-              <div>Candidate Name</div>
-              <div>Enrollment</div>
-              <div>Branch</div>
-              <div>Result</div>
-            </div>
-          )}
-          {candidates.map((candidate, idx) => (
-            <div key={idx} className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-3 p-3 bg-[#181f1f] rounded-lg">
-              <div className="text-white font-semibold">{candidate.name}</div>
-              <div className="text-gray-300">{candidate.enrollment}</div>
-              <div className="text-gray-400">{candidate.branch}</div>
               <div>
                 <select 
-                  className="w-full bg-[#232b2b] border border-[#28c76f]/40 rounded-lg px-3 py-2 text-white" 
-                  value={candidate.result} 
-                  onChange={e => handleResultChange(candidate.enrollment, e.target.value)}
+                  className="w-full bg-[#232b2b] border border-[#28c76f]/30 rounded-lg px-3 py-2 text-white"
+                  value={candidate.result || (status === 'pending' ? 'awaited' : 'not_selected')}
+                  onChange={e => setCandidates(prev => prev.map((c, i) => i === idx ? { ...c, result: e.target.value } : c))}
                 >
                   <option value="awaited">Awaited</option>
                   <option value="selected">Selected</option>
                   <option value="not_selected">Not Selected</option>
                 </select>
+              </div>
+              <div className="md:col-span-6 grid grid-cols-3 gap-3">
+                <input id={`for-${idx}`} placeholder="For stake (e.g., 2.00)" className="bg-[#232b2b] border border-[#28c76f]/30 rounded-lg px-3 py-2 text-white" />
+                <input id={`against-${idx}`} placeholder="Against stake (e.g., 2.00)" className="bg-[#232b2b] border border-[#28c76f]/30 rounded-lg px-3 py-2 text-white" />
+                <div className="flex gap-2">
+                  <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-2 rounded" onClick={async () => {
+                    try {
+                      await axios.put(`http://localhost:5000/api/admin/companies/${company.id || company._id}/candidates/${candidate.id}`, {
+                        name: candidate.name,
+                        enrollmentNumber: candidate.enrollment,
+                        branch: candidate.branch,
+                        course: candidate.course,
+                        stakes: {
+                          for: document.getElementById(`for-${idx}`).value || '2.00',
+                          against: document.getElementById(`against-${idx}`).value || '2.00'
+                        }
+                      }, { headers: { 'x-auth-token': localStorage.getItem('token') || '' } });
+                      alert('✅ Candidate updated');
+                    } catch (err) {
+                      console.error(err);
+                      alert('Failed to update candidate');
+                    }
+                  }}>Save</button>
+                  <button className="bg-red-600 hover:bg-red-700 text-white font-bold px-3 py-2 rounded" onClick={async () => {
+                    if (!window.confirm('Remove from shortlist?')) return;
+                    try {
+                      const res = await axios.delete(`http://localhost:5000/api/admin/companies/${company.id || company._id}/candidates/${candidate.id}`, { headers: { 'x-auth-token': localStorage.getItem('token') || '' } });
+                      const ev = res.data;
+                      setCandidates((ev.candidates || []).map(c => ({ id: c._id, name: c.name, enrollment: c.enrollmentNumber, branch: c.branch, course: c.course })));
+                    } catch (err) {
+                      console.error(err);
+                      alert('Failed to delete candidate');
+                    }
+                  }}>Delete</button>
+                </div>
               </div>
             </div>
           ))}
@@ -805,29 +1014,28 @@ function UpdateResultsModal({ open, onClose, onSubmit, company }) {
 
   useEffect(() => {
     if (company) {
-      // Load candidates with proper names and details
-      const companyCandidates = (company.shortlist || []).map(candidateId => {
-        const candidate = mockCandidates.find(c => c.id === candidateId);
-        const existingResult = company.candidates?.find(c => c.enrollment === candidate?.enrollment)?.result || 'awaited';
-        return {
-          enrollment: candidate?.enrollment || candidateId,
-          name: candidate?.name || candidateId,
-          branch: candidate?.branch || 'N/A',
-          result: existingResult
-        };
-      });
-      setCandidates(companyCandidates);
+      const list = (company.candidates || []).map(c => ({
+        id: c._id || c.id,
+        name: c.name,
+        enrollment: c.enrollmentNumber || c.enrollment,
+        branch: c.branch || 'N/A',
+        result: company.status === 'pending' ? 'awaited' : 'not_selected'
+      }));
+      if (company.status === 'expired' && Array.isArray(company.winningCandidates)) {
+        const winSet = new Set(company.winningCandidates.map(x => String(x)));
+        list.forEach(c => { if (winSet.has(String(c.id))) c.result = 'selected'; });
+      }
+      setCandidates(list);
     }
   }, [company]);
 
   function handleResultChange(enrollment, result) {
-    setCandidates(prev => prev.map(c => 
-      c.enrollment === enrollment ? { ...c, result } : c
-    ));
+    setCandidates(prev => prev.map(c => c.enrollment === enrollment ? { ...c, result } : c));
   }
 
   function handleSubmit() {
-    onSubmit(company.id, candidates);
+    const winningCandidateIds = candidates.filter(c => c.result === 'selected').map(c => c.id);
+    onSubmit(company._id || company.id, winningCandidateIds);
     onClose();
   }
 
@@ -843,7 +1051,7 @@ function UpdateResultsModal({ open, onClose, onSubmit, company }) {
           backdropFilter: 'blur(12px)',
         }}>
         <button className="absolute top-4 right-4 text-gray-400 text-2xl font-bold hover:text-red-400" onClick={onClose}>&times;</button>
-        <h2 className="text-3xl font-bold text-red-400 mb-4">Update Results - {company?.name}</h2>
+        <h2 className="text-3xl font-bold text-red-400 mb-4">Update Results - {company?.name || company?.companyName}</h2>
         <div className="bg-[#232b2b] rounded-xl p-4 border border-red-400/30 mb-4 shadow-inner">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 text-white font-semibold">
             <div>Candidate Name</div>
@@ -1056,28 +1264,181 @@ function SelectCarouselModal({ open, onClose, onSubmit }) {
   );
 }
 
-export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideModal, showAnnouncement, setShowAnnouncement, announcementIdx, announcements, isSliding }) {
+// Edit Shortlist Modal Component
+function EditShortlistModal({ open, onClose, onSubmit, candidate, companies }) {
+  const [selectedCompanies, setSelectedCompanies] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (candidate && companies) {
+      // Initialize with current shortlisted companies
+      const currentShortlisted = candidate.shortlistedIn || [];
+      const companyIds = currentShortlisted.map(entry => {
+        if (typeof entry === 'object' && entry._id) {
+          return entry._id;
+        } else if (typeof entry === 'string') {
+          return entry;
+        }
+        return null;
+      }).filter(Boolean);
+      setSelectedCompanies(companyIds);
+    }
+  }, [candidate, companies]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!candidate) return;
+    
+    setLoading(true);
+    try {
+      await onSubmit(selectedCompanies);
+    } catch (error) {
+      console.error('Error updating shortlist:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-[#181f1f] rounded-2xl shadow-2xl border-2 border-[#28c76f]/40 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-[#28c76f] flex items-center gap-2">
+              <span>📋</span> Edit Shortlist for {candidate?.name}
+            </h2>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-white text-2xl font-bold"
+            >
+              ×
+            </button>
+          </div>
+          
+          <div className="mb-4">
+            <p className="text-gray-300 text-sm">
+              Select the companies where this candidate should be shortlisted:
+            </p>
+          </div>
+
+          {companies && companies.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto">
+              {companies.map(company => (
+                <label key={company._id} className="flex items-center space-x-3 p-3 bg-[#232b2b] rounded-lg border border-[#28c76f]/30 hover:border-[#28c76f]/60 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedCompanies.includes(company._id)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedCompanies([...selectedCompanies, company._id]);
+                      } else {
+                        setSelectedCompanies(selectedCompanies.filter(id => id !== company._id));
+                      }
+                    }}
+                    className="w-4 h-4 text-[#28c76f] bg-[#232b2b] border-[#28c76f]/30 rounded focus:ring-[#28c76f] focus:ring-2"
+                  />
+                  <div className="flex-1">
+                    <div className="font-semibold text-white">{company.companyName}</div>
+                    <div className="text-sm text-gray-400">{company.jobProfile}</div>
+                  </div>
+                </label>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center text-gray-400 py-8">
+              No companies available
+            </div>
+          )}
+
+          <div className="flex justify-end gap-3 pt-6">
+            <button
+              type="button"
+              onClick={onClose}
+              className="bg-gray-500 hover:bg-gray-600 text-white font-bold px-6 py-2 rounded-lg"
+              disabled={loading}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={loading}
+              className="bg-[#28c76f] hover:bg-[#22b36a] text-white font-bold px-6 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Updating...' : 'Update Shortlist'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideModal }) {
   // Only allow Jon Snow (admin) to view this page
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showResultsModal, setShowResultsModal] = useState(false);
   const [showAddIndividualModal, setShowAddIndividualModal] = useState(false);
   const [showCarouselModal, setShowCarouselModal] = useState(false);
+  const [showEditCandidateModal, setShowEditCandidateModal] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState(null);
+  const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [companies, setCompanies] = useState([]);
+  const [candidates, setCandidates] = useState([]);
   // Local state to force refresh after adding company
   const [refresh, setRefresh] = useState(0);
   // Filter states for individuals table
   const [individualSearchTerm, setIndividualSearchTerm] = useState("");
   const [individualStatusFilter, setIndividualStatusFilter] = useState("all");
   const [individualBranchFilter, setIndividualBranchFilter] = useState("all");
+  // Candidate management states
+  const [candidateSearchTerm, setCandidateSearchTerm] = useState("");
+  const [candidateBranchFilter, setCandidateBranchFilter] = useState("all");
+  const [showEditShortlistModal, setShowEditShortlistModal] = useState(false);
   
-  // Load companies on component mount and refresh
+  // Load companies, bets, and candidates from backend on mount/refresh
   useEffect(() => {
-    setCompanies([...mockCompanies]);
+    const fetchAdminData = async () => {
+      try {
+        const [eventsRes, betsRes, candidatesRes] = await Promise.all([
+          axios.get('http://localhost:5000/api/events'),
+          axios.get('http://localhost:5000/api/bets'),
+          axios.get('http://localhost:5000/api/admin/candidates', {
+            headers: { 'x-auth-token': localStorage.getItem('token') || '' }
+          })
+        ]);
+        
+        const eventsData = eventsRes.data || [];
+        const candidatesData = candidatesRes.data || [];
+        
+        // Ensure companies have candidates data populated
+        const companiesWithCandidates = eventsData.map(company => ({
+          ...company,
+          candidates: company.candidates || []
+        }));
+        
+        setCompanies(companiesWithCandidates);
+        setBets(betsRes.data || []);
+        setCandidates(candidatesData);
+        
+        // Debug logging
+        console.log('Companies data:', companiesWithCandidates);
+        console.log('Candidates data:', candidatesData);
+      } catch (err) {
+        console.error('Failed to fetch admin data', err);
+        // Fallback to mock if backend not available
+        setCompanies([...mockCompanies]);
+        setCandidates([...mockCandidates]);
+      }
+    };
+    fetchAdminData();
   }, [refresh]);
+  const [bets, setBets] = useState([]);
+  const openAddIndividualGlobal = () => setShowAddIndividualModal(true);
 
-  const isAdmin = user && user.name === 'Jon Snow';
+  const isAdmin = Boolean(user?.isAdmin);
   if (!isAdmin) {
     return (
       <PageLayout user={user}>
@@ -1088,161 +1449,86 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
     );
   }
 
-  const handleAddCompany = (newCompany) => {
-    // Add company to mockCompanies (in-place for demo)
-    const companyData = {
-      id: newCompany.companyName.toLowerCase().replace(/[^a-z0-9]/g, ""),
-      name: newCompany.companyName,
-      role: newCompany.profile,
-      expiresOn: newCompany.expiresOn,
+  const handleAddCompany = async (newCompany) => {
+    try {
+      const payload = {
+        companyName: newCompany.companyName,
+        companyLogo: newCompany.logoUrl || '',
+        jobProfile: newCompany.profile,
+        status: 'active',
+        expiresAt: newCompany.expiresOn,
       liveEventSection: newCompany.liveEventSection,
-      logo: newCompany.logoUrl || "",
-      shortlist: newCompany.individuals.map(ind => ind.enrollment),
-      status: 'active', // Default status
-      candidates: newCompany.individuals.map(ind => ({
-        enrollment: ind.enrollment,
-        name: ind.name,
-        result: 'awaited' // Default result
-      }))
-    };
-    mockCompanies.push(companyData);
-    
-    // Add or update individuals in mockCandidates
-    newCompany.individuals.forEach(ind => {
-      let candidate = mockCandidates.find(c => c.enrollment === ind.enrollment);
-      
-      // Combine course and branch into "Course (Branch)" format
-      let combinedBranch = "";
-      if (ind.course && ind.branch) {
-        combinedBranch = `${ind.course} (${ind.branch})`;
-      } else if (ind.course) {
-        combinedBranch = ind.course;
-      } else if (ind.branch) {
-        combinedBranch = ind.branch;
-      } else {
-        combinedBranch = "Unknown";
-      }
-      
-      if (!candidate) {
-        // Add new candidate
-        mockCandidates.push({
-          id: `cand${mockCandidates.length + 1}`,
-          name: ind.name,
-          enrollment: ind.enrollment,
-          branch: combinedBranch,
-          shortlistedIn: [newCompany.companyName.toLowerCase().replace(/[^a-z0-9]/g, "")]
-        });
-      } else {
-        // Update existing candidate's branch if provided
-        if (combinedBranch !== "Unknown") {
-          candidate.branch = combinedBranch;
-        }
-        // Add company to their shortlist if not already present
-        if (!candidate.shortlistedIn.includes(newCompany.companyName.toLowerCase().replace(/[^a-z0-9]/g, ""))) {
-          candidate.shortlistedIn.push(newCompany.companyName.toLowerCase().replace(/[^a-z0-9]/g, ""));
-        }
-      }
-    });
-    setRefresh(r => r + 1); // Force re-render
-  };
-
-  const handleEditCompany = (updatedCompany) => {
-    const index = mockCompanies.findIndex(c => c.id === updatedCompany.id);
-    if (index !== -1) {
-      // Check if any candidate has been selected or not selected
-      const hasResultsDeclared = updatedCompany.candidates && updatedCompany.candidates.some(c => c.result !== 'awaited');
-      const newStatus = hasResultsDeclared ? 'expired' : 'active';
-      
-      // Update company data
-      mockCompanies[index] = { 
-        ...mockCompanies[index], 
-        ...updatedCompany,
-        logo: updatedCompany.logoUrl || mockCompanies[index].logo || "",
-        status: newStatus
+        candidates: []
       };
-      
-      // Update candidate data in mockCandidates if results changed
-      if (updatedCompany.candidates) {
-        updatedCompany.candidates.forEach(updatedCandidate => {
-          const candidateIndex = mockCandidates.findIndex(c => c.enrollment === updatedCandidate.enrollment);
-          if (candidateIndex !== -1) {
-            // Update the candidate's result in the global data
-            if (!mockCandidates[candidateIndex].results) {
-              mockCandidates[candidateIndex].results = {};
-            }
-            mockCandidates[candidateIndex].results[updatedCompany.id] = updatedCandidate.result;
-          }
-        });
-      }
-      
+      const res = await axios.post('http://localhost:5000/api/admin/companies', payload, {
+        headers: { 'x-auth-token': localStorage.getItem('token') || '' }
+      });
+      alert('✅ Company created');
       setRefresh(r => r + 1);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to create company');
     }
   };
 
-  const handleUpdateResults = (companyId, results) => {
-    const index = mockCompanies.findIndex(c => c.id === companyId);
-    if (index !== -1) {
-      mockCompanies[index].candidates = results;
-      mockCompanies[index].status = 'expired';
+  const handleEditCompany = async (updatedCompany) => {
+    try {
+      const payload = {
+        companyName: updatedCompany.name,
+        companyLogo: updatedCompany.logoUrl,
+        jobProfile: updatedCompany.role,
+        expiresAt: updatedCompany.expiresOn,
+        liveEventSection: updatedCompany.liveEventSection,
+        status: updatedCompany.status
+      };
+      const targetId = updatedCompany._id || updatedCompany.id;
+      await axios.put(`http://localhost:5000/api/admin/companies/${targetId}`, payload, {
+        headers: { 'x-auth-token': localStorage.getItem('token') || '' }
+      });
+      alert('✅ Company updated');
       setRefresh(r => r + 1);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to update company');
     }
+  };
+
+  const handleUpdateResults = (companyId, winningCandidateIds) => {
+    axios.post(`http://localhost:5000/api/admin/events/${companyId}/update-results`, {
+      winningCandidateIds
+    }, {
+      headers: { 'x-auth-token': localStorage.getItem('token') || '' }
+    }).then(() => {
+      alert('✅ Results updated successfully');
+      setRefresh(r => r + 1);
+    }).catch(err => {
+      console.error(err);
+      alert('Failed to update results');
+    });
   };
 
   const handleAddIndividual = (newIndividual) => {
-    // Check if individual already exists
-    let candidate = mockCandidates.find(c => c.enrollment === newIndividual.enrollment);
-    
-    if (!candidate) {
-      // Add new candidate
-      candidate = {
-        id: `cand${mockCandidates.length + 1}`,
-        name: newIndividual.name,
-        enrollment: newIndividual.enrollment,
-        branch: newIndividual.branch,
-        email: newIndividual.email,
-        shortlistedIn: [] // No companies shortlisted yet
-      };
-      mockCandidates.push(candidate);
-      
-      // Also add to mockUsers if not exists
-      const existingUser = mockUsers.find(u => u.id === newIndividual.enrollment);
-      if (!existingUser) {
-        const newUser = {
-          id: newIndividual.enrollment,
-          name: newIndividual.name,
-          email: newIndividual.email,
-          tokens: 100000, // Default tokens
-          successRate: 75, // Default success rate
-          bets: [] // No bets yet
-        };
-        mockUsers.push(newUser);
-      }
-      
-      alert(`✅ Individual "${newIndividual.name}" added successfully!`);
-    } else {
-      // Update existing candidate's information
-      candidate.name = newIndividual.name;
-      candidate.branch = newIndividual.branch;
-      candidate.email = newIndividual.email;
-      
-      alert(`✅ Individual "${newIndividual.name}" information updated!`);
-    }
-    
-    setRefresh(r => r + 1); // Force re-render
+    // This function is called when adding individual from the global modal
+    // The individual is already added to the backend, so we just need to refresh
+    setRefresh(r => r + 1);
+    alert('✅ Individual added successfully');
   };
 
-  const handleUpdateCarousel = (selectedCompanyIds) => {
-    // Update the global carousel company IDs
-    adminCarouselCompanyIds.length = 0;
-    adminCarouselCompanyIds.push(...selectedCompanyIds);
-    
-    alert(`✅ Carousel updated with ${selectedCompanyIds.length} companies!`);
-    setRefresh(r => r + 1); // Force re-render
+  const handleUpdateCarousel = async (selectedCompanyIds) => {
+    try {
+      await axios.post('http://localhost:5000/api/admin/feature', { featuredIds: selectedCompanyIds }, {
+        headers: { 'x-auth-token': localStorage.getItem('token') || '' }
+      });
+      alert('✅ Carousel updated');
+      setRefresh(r => r + 1);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to update carousel: ' + (err.response?.data?.msg || err.message));
+    }
   };
 
   const getTotalTokens = (company) => {
-    // Calculate total tokens bet on this company from actual bets
-    return mockBets.filter(bet => bet.companyId === company.id)
+    return bets.filter(bet => bet.companyEvent?._id === company._id)
       .reduce((sum, bet) => sum + (Number(bet.amount) || 0), 0);
   };
 
@@ -1253,16 +1539,67 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
     return today > expiryDate;
   };
 
+  const handleEditCandidate = async (updatedCandidate) => {
+    try {
+      if (!selectedCandidate || !selectedCandidate._id) {
+        alert('No candidate selected for editing');
+        return;
+      }
+      
+      await axios.put(`http://localhost:5000/api/admin/candidates/${selectedCandidate._id}`, updatedCandidate, {
+        headers: { 'x-auth-token': localStorage.getItem('token') || '' }
+      });
+      alert('✅ Candidate updated successfully');
+      setShowEditCandidateModal(false);
+      setSelectedCandidate(null);
+      setRefresh(r => r + 1);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to update candidate: ' + (err.response?.data?.msg || err.message));
+    }
+  };
+
+  const handleDeleteCandidate = async (candidateId) => {
+    if (!candidateId) {
+      alert('No candidate ID provided');
+      return;
+    }
+    
+    if (!window.confirm('Are you sure you want to delete this candidate? This will remove them from all shortlists.')) {
+      return;
+    }
+    try {
+      await axios.delete(`http://localhost:5000/api/admin/candidates/${candidateId}`, {
+        headers: { 'x-auth-token': localStorage.getItem('token') || '' }
+      });
+      alert('✅ Candidate deleted successfully');
+      setRefresh(r => r + 1);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to delete candidate: ' + (err.response?.data?.msg || err.message));
+    }
+  };
+
+  const handleUpdateShortlist = async (candidateId, selectedCompanyIds) => {
+    try {
+      await axios.put(`http://localhost:5000/api/admin/candidates/${candidateId}/shortlist`, {
+        companyIds: selectedCompanyIds
+      }, {
+        headers: { 'x-auth-token': localStorage.getItem('token') || '' }
+      });
+
+      alert('✅ Shortlist updated successfully');
+      setShowEditShortlistModal(false);
+      setSelectedCandidate(null);
+      setRefresh(r => r + 1);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to update shortlist: ' + (err.response?.data?.msg || err.message));
+    }
+  };
+
   return (
-    <PageLayout
-      user={user}
-      onUserGuide={() => setShowUserGuideModal(true)}
-      showAnnouncement={showAnnouncement}
-      setShowAnnouncement={setShowAnnouncement}
-      announcementIdx={announcementIdx}
-      announcements={announcements}
-      isSliding={isSliding}
-    >
+    <PageLayout user={user} onUserGuide={() => setShowUserGuideModal(true)}>
       <AddCompanyModal open={showAddModal} onClose={() => setShowAddModal(false)} onSubmit={handleAddCompany} />
       <EditCompanyModal 
         open={showEditModal} 
@@ -1287,9 +1624,28 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
         onClose={() => setShowCarouselModal(false)}
         onSubmit={handleUpdateCarousel}
       />
+      <EditCandidateModal 
+        open={showEditCandidateModal}
+        onClose={() => {
+          setShowEditCandidateModal(false);
+          setSelectedCandidate(null);
+        }}
+        onSubmit={handleEditCandidate}
+        candidate={selectedCandidate}
+      />
+      <EditShortlistModal 
+        open={showEditShortlistModal}
+        onClose={() => {
+          setShowEditShortlistModal(false);
+          setSelectedCandidate(null);
+        }}
+        onSubmit={(selectedCompanyIds) => handleUpdateShortlist(selectedCandidate._id, selectedCompanyIds)}
+        candidate={selectedCandidate}
+        companies={companies}
+      />
       <div className="w-full max-w-6xl mx-auto mt-4">
         <h1 className="text-4xl font-extrabold text-[#28c76f] mb-4 text-center">Betting Admin Panel</h1>
-        <div className="flex justify-between mb-4 gap-2">
+        <div className="flex flex-wrap justify-between mb-4 gap-2">
           <button className="bg-[#28c76f] hover:bg-[#22b36a] text-white font-bold px-4 py-2 rounded-lg flex items-center gap-2 text-base shadow" onClick={() => setShowAddModal(true)}>
             <span className="text-xl">＋</span> Add Company
           </button>
@@ -1307,7 +1663,7 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
         </div>
         <div className="bg-[#181f1f] rounded-2xl shadow-lg p-4 border-2 border-[#28c76f]/40 mb-6 overflow-x-auto">
           <h2 className="text-2xl font-bold text-[#28c76f] mb-3 flex items-center gap-2"><span>📊</span> All Companies</h2>
-          <table className="min-w-full text-base">
+          <table className="min-w-full text-xs sm:text-base">
             <thead>
               <tr className="text-[#28c76f] border-b border-[#28c76f]/20">
                 <th className="px-3 py-2 text-left">Company</th>
@@ -1325,17 +1681,15 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
                   <td colSpan="7" className="px-3 py-4 text-center text-gray-400">No companies added yet. Add your first company!</td>
                 </tr>
               ) : companies.map(company => {
-                // Determine status based on whether results are declared
-                const hasResultsDeclared = company.candidates && company.candidates.some(c => c.result !== 'awaited');
-                const actualStatus = hasResultsDeclared ? 'expired' : 'active';
+                const actualStatus = company.status || 'active';
                 const statusColor = actualStatus === 'active' ? 'bg-[#28c76f]' : 'bg-red-500';
                 const statusText = actualStatus;
                 return (
-                  <tr key={company.id} className="border-b border-[#28c76f]/10">
-                    <td className="px-3 py-2">{company.name}</td>
-                    <td className="px-3 py-2">{company.role}</td>
+                  <tr key={company._id} className="border-b border-[#28c76f]/10">
+                    <td className="px-3 py-2">{company.companyName}</td>
+                    <td className="px-3 py-2">{company.jobProfile}</td>
                     <td className="px-3 py-2">{company.liveEventSection || 'N/A'}</td>
-                    <td className="px-3 py-2">{company.expiresOn || 'N/A'}</td>
+                    <td className="px-3 py-2">{company.expiresAt ? new Date(company.expiresAt).toLocaleDateString() : 'N/A'}</td>
                     <td className="px-3 py-2">{getTotalTokens(company).toLocaleString()}</td>
                     <td className="px-3 py-2">
                       <span className={`${statusColor} text-white px-3 py-1 rounded-full font-bold text-sm`}>
@@ -1347,7 +1701,17 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
                         <button 
                           className="bg-blue-500 hover:bg-blue-600 text-white font-bold px-3 py-1 rounded-lg text-sm"
                           onClick={() => {
-                            setSelectedCompany(company);
+                            setSelectedCompany({
+                              id: company._id,
+                              _id: company._id,
+                              name: company.companyName,
+                              role: company.jobProfile,
+                              expiresOn: company.expiresAt ? new Date(company.expiresAt).toISOString().slice(0,10) : '',
+                              logo: company.companyLogo,
+                              liveEventSection: company.liveEventSection,
+                              status: company.status,
+                              candidates: company.candidates
+                            });
                             setShowEditModal(true);
                           }}
                         >
@@ -1364,6 +1728,21 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
                             Results
                           </button>
                         )}
+                        <button
+                          className="bg-red-600 hover:bg-red-700 text-white font-bold px-3 py-1 rounded-lg text-sm"
+                          onClick={async () => {
+                            if (!window.confirm('Delete this company and all its bets?')) return;
+                            try {
+                              await axios.delete(`http://localhost:5000/api/admin/companies/${company._id || company.id}`, { headers: { 'x-auth-token': localStorage.getItem('token') || '' } });
+                              setRefresh(r => r + 1);
+                            } catch (err) {
+                              console.error(err);
+                              alert('Failed to delete company');
+                            }
+                          }}
+                        >
+                          Delete
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -1374,10 +1753,10 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
         </div>
 
         {/* Expired Bets Management Section */}
-        <div className="bg-[#181f1f] rounded-2xl shadow-lg p-4 border-2 border-red-400/40 overflow-x-auto mb-8">
+        <div className="hidden">
           <h2 className="text-2xl font-bold text-red-400 mb-3 flex items-center gap-2"><span>⏰</span> Expired Bets - Update Results</h2>
           <div className="text-gray-300 mb-4">Companies with expired betting periods. Update candidate results to finalize payouts.</div>
-          <table className="min-w-full text-base">
+          <table className="min-w-full text-xs sm:text-base">
             <thead>
               <tr className="text-red-400 border-b border-red-400/20">
                 <th className="px-3 py-2 text-left">Company</th>
@@ -1402,10 +1781,10 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
               }).map(company => {
                 const hasResults = company.candidates && company.candidates.some(c => c.result !== 'awaited');
                 return (
-                  <tr key={company.id} className="border-b border-red-400/10">
-                    <td className="px-3 py-2">{company.name}</td>
-                    <td className="px-3 py-2">{company.role}</td>
-                    <td className="px-3 py-2">{company.expiresOn || 'N/A'}</td>
+                  <tr key={company._id} className="border-b border-red-400/10">
+                    <td className="px-3 py-2">{company.companyName}</td>
+                    <td className="px-3 py-2">{company.jobProfile}</td>
+                    <td className="px-3 py-2">{company.expiresAt ? new Date(company.expiresAt).toLocaleDateString() : 'N/A'}</td>
                     <td className="px-3 py-2">{company.candidates?.length || 0} candidates</td>
                     <td className="px-3 py-2">
                       <span className={`${hasResults ? 'bg-green-500' : 'bg-red-500'} text-white px-3 py-1 rounded-full font-bold text-sm`}>
@@ -1414,14 +1793,13 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
                     </td>
                     <td className="px-3 py-2">
                       <button 
-                        className={`${hasResults ? 'bg-gray-500 hover:bg-gray-600' : 'bg-red-500 hover:bg-red-600'} text-white font-bold px-3 py-1 rounded-lg text-sm`}
+                        className={`bg-red-500 hover:bg-red-600 text-white font-bold px-3 py-1 rounded-lg text-sm`}
                         onClick={() => {
                           setSelectedCompany(company);
                           setShowResultsModal(true);
                         }}
-                        disabled={hasResults}
                       >
-                        {hasResults ? 'Completed' : 'Update Results'}
+                        Update Results
                       </button>
                     </td>
                   </tr>
@@ -1432,11 +1810,11 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
         </div>
 
         {/* Individuals Management Section */}
-        <div className="bg-[#181f1f] rounded-2xl shadow-lg p-4 border-2 border-purple-400/40 overflow-x-auto mb-6">
+        <div className="hidden">
           <h2 className="text-2xl font-bold text-purple-400 mb-3 flex items-center gap-2"><span>👥</span> All Individuals</h2>
           
           {/* Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div>
               <label className="block text-purple-300 font-bold mb-2 text-sm">🔍 Search</label>
               <input
@@ -1508,7 +1886,7 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
             })()} filtered
           </div>
 
-          <table className="min-w-full text-base">
+          <table className="min-w-full text-xs sm:text-base">
             <thead>
               <tr className="text-purple-400 border-b border-purple-400/20">
                 <th className="px-3 py-2 text-left">Name</th>
@@ -1596,6 +1974,268 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
               </div>
             );
           })()}
+        </div>
+
+        {/* Candidate Management Section */}
+        <div className="bg-[#181f1f] rounded-2xl shadow-lg p-4 border-2 border-[#28c76f]/40 mb-6 overflow-x-auto">
+          <h2 className="text-2xl font-bold text-[#28c76f] mb-3 flex items-center gap-2"><span>👥</span> Manage Candidates</h2>
+          
+          {/* Filters */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+            <div>
+              <label className="block text-[#28c76f] font-bold mb-2 text-sm">🔍 Search</label>
+              <input
+                type="text"
+                placeholder="Search by name or enrollment..."
+                value={candidateSearchTerm}
+                onChange={(e) => setCandidateSearchTerm(e.target.value)}
+                className="w-full bg-[#0f1414] border-2 border-[#28c76f]/40 rounded-lg px-3 py-2 text-white text-sm focus:border-[#28c76f] focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-[#28c76f] font-bold mb-2 text-sm">🎓 Branch</label>
+              <select
+                value={candidateBranchFilter}
+                onChange={(e) => setCandidateBranchFilter(e.target.value)}
+                className="w-full bg-[#0f1414] border-2 border-[#28c76f]/40 rounded-lg px-3 py-2 text-white text-sm focus:border-[#28c76f] focus:outline-none"
+              >
+                <option value="all">All Branches</option>
+                {Array.from(new Set(
+                  candidates
+                    .map(c => c.branch)
+                    .filter(Boolean)
+                    .map(branch => {
+                      // Clean up branch names - remove course prefixes like "IDD (Engineering Physics)" -> "Engineering Physics"
+                      if (branch.includes('(') && branch.includes(')')) {
+                        return branch.replace(/^[^(]+\(([^)]+)\)$/, '$1').trim();
+                      }
+                      return branch;
+                    })
+                )).sort().map(branch => (
+                  <option key={branch} value={branch}>{branch}</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-end">
+              <button
+                onClick={() => {
+                  setCandidateSearchTerm("");
+                  setCandidateBranchFilter("all");
+                }}
+                className="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
+              >
+                🗑️ Clear Filters
+              </button>
+            </div>
+          </div>
+
+          <div className="text-gray-300 mb-4">
+            Manage all candidates in the system. 
+            Total: {candidates.length} candidates | 
+            Showing: {(() => {
+              const filtered = candidates.filter(candidate => {
+                const matchesSearch = !candidateSearchTerm || 
+                  candidate.name?.toLowerCase().includes(candidateSearchTerm.toLowerCase()) ||
+                  candidate.enrollmentNumber?.toLowerCase().includes(candidateSearchTerm.toLowerCase());
+                
+                const matchesBranch = candidateBranchFilter === "all" || (() => {
+                  if (!candidate.branch) return false;
+                  // Clean up candidate's branch name for comparison
+                  let candidateBranch = candidate.branch;
+                  if (candidateBranch.includes('(') && candidateBranch.includes(')')) {
+                    candidateBranch = candidateBranch.replace(/^[^(]+\(([^)]+)\)$/, '$1').trim();
+                  }
+                  return candidateBranch === candidateBranchFilter;
+                })();
+                
+                return matchesSearch && matchesBranch;
+              });
+              return filtered.length;
+            })()} filtered
+          </div>
+
+          <table className="min-w-full text-xs sm:text-base">
+            <thead>
+              <tr className="text-[#28c76f] border-b border-[#28c76f]/20">
+                <th className="px-3 py-2 text-left">Name</th>
+                <th className="px-3 py-2 text-left">Enrollment</th>
+                <th className="px-3 py-2 text-left">Course</th>
+                <th className="px-3 py-2 text-left">Branch</th>
+                <th className="px-3 py-2 text-left">Shortlisted In</th>
+                <th className="px-3 py-2 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="text-white">
+              {(() => {
+                const filtered = candidates.filter(candidate => {
+                  const matchesSearch = !candidateSearchTerm || 
+                    candidate.name?.toLowerCase().includes(candidateSearchTerm.toLowerCase()) ||
+                    candidate.enrollmentNumber?.toLowerCase().includes(candidateSearchTerm.toLowerCase());
+                  
+                  const matchesBranch = candidateBranchFilter === "all" || (() => {
+                    if (!candidate.branch) return false;
+                    // Clean up candidate's branch name for comparison
+                    let candidateBranch = candidate.branch;
+                    if (candidateBranch.includes('(') && candidateBranch.includes(')')) {
+                      candidateBranch = candidateBranch.replace(/^[^(]+\(([^)]+)\)$/, '$1').trim();
+                    }
+                    return candidateBranch === candidateBranchFilter;
+                  })();
+                  
+                  return matchesSearch && matchesBranch;
+                });
+
+                if (filtered.length === 0) {
+                  return (
+                    <tr>
+                      <td colSpan="6" className="px-3 py-4 text-center text-gray-400">
+                        No candidates found matching the current filters.
+                      </td>
+                    </tr>
+                  );
+                }
+
+                return filtered.map(candidate => {
+                  // Get shortlisted companies with proper handling of different data structures
+                  const getShortlistedCompanies = (candidate) => {
+                    const shortlistedCompanies = [];
+                    
+                    // Method 1: Try to get names from populated shortlistedIn data
+                    if (candidate.shortlistedIn && Array.isArray(candidate.shortlistedIn)) {
+                      candidate.shortlistedIn.forEach(entry => {
+                        if (entry && typeof entry === 'object') {
+                          // If it's a populated object with companyName
+                          if (entry.companyName) {
+                            shortlistedCompanies.push(entry.companyName);
+                          } else if (entry._id) {
+                            // If it's an object with just _id, try to find the company
+                            const company = companies.find(c => c._id === entry._id);
+                            if (company) {
+                              shortlistedCompanies.push(company.companyName);
+                            }
+                          }
+                        } else if (typeof entry === 'string') {
+                          // If it's a string (ObjectId), try to find the company
+                          const company = companies.find(c => c._id === entry);
+                          if (company) {
+                            shortlistedCompanies.push(company.companyName);
+                          }
+                        }
+                      });
+                    }
+                    
+                    // Method 2: If no names found from shortlistedIn, try to compute from events data (fallback)
+                    if (shortlistedCompanies.length === 0 && companies.length > 0) {
+                      const candidateId = candidate._id || candidate.id;
+                      const candidateEnrollment = candidate.enrollmentNumber;
+                      
+                      for (const company of companies) {
+                        if (company.candidates && Array.isArray(company.candidates)) {
+                          const isCandidateInCompany = company.candidates.some(c => {
+                            const cId = c._id || c.id || c;
+                            const cEnrollment = c.enrollmentNumber || c.enrollment;
+                            return cId === candidateId || cEnrollment === candidateEnrollment;
+                          });
+                          
+                          if (isCandidateInCompany) {
+                            const companyName = company.companyName;
+                            if (companyName && !shortlistedCompanies.includes(companyName)) {
+                              shortlistedCompanies.push(companyName);
+                            }
+                          }
+                        }
+                      }
+                    }
+                    
+                    // Method 3: If still no companies found, try to check if candidate is in any company's candidates array
+                    if (shortlistedCompanies.length === 0 && companies.length > 0) {
+                      const candidateId = candidate._id || candidate.id;
+                      const candidateEnrollment = candidate.enrollmentNumber;
+                      
+                      for (const company of companies) {
+                        // Check if candidate is in the company's candidates array
+                        if (company.candidates && Array.isArray(company.candidates)) {
+                          const isInCompany = company.candidates.some(c => {
+                            if (typeof c === 'object' && c._id) {
+                              return c._id === candidateId || c.enrollmentNumber === candidateEnrollment;
+                            } else if (typeof c === 'string') {
+                              return c === candidateId;
+                            }
+                            return false;
+                          });
+                          
+                          if (isInCompany) {
+                            const companyName = company.companyName;
+                            if (companyName && !shortlistedCompanies.includes(companyName)) {
+                              shortlistedCompanies.push(companyName);
+                            }
+                          }
+                        }
+                      }
+                    }
+                    
+                    return shortlistedCompanies;
+                  };
+
+                  const shortlistedCompanies = getShortlistedCompanies(candidate);
+                  const shortlistedCompaniesText = shortlistedCompanies.length > 0 
+                    ? shortlistedCompanies.join(', ') 
+                    : 'None';
+                  
+                  // Clean up branch name for display
+                  let displayBranch = candidate.branch || 'N/A';
+                  if (displayBranch !== 'N/A' && displayBranch.includes('(') && displayBranch.includes(')')) {
+                    displayBranch = displayBranch.replace(/^[^(]+\(([^)]+)\)$/, '$1').trim();
+                  }
+                  
+                  return (
+                    <tr key={candidate._id} className="border-b border-[#28c76f]/10">
+                      <td className="px-3 py-2 font-semibold">{candidate.name || 'N/A'}</td>
+                      <td className="px-3 py-2 text-[#28c76f]">{candidate.enrollmentNumber || 'N/A'}</td>
+                      <td className="px-3 py-2">{candidate.course || 'N/A'}</td>
+                      <td className="px-3 py-2">{displayBranch}</td>
+                      <td className="px-3 py-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-300">
+                            {shortlistedCompaniesText}
+                          </span>
+                          <button
+                            className="bg-green-500 hover:bg-green-600 text-white font-bold px-2 py-1 rounded text-xs"
+                            onClick={() => {
+                              setSelectedCandidate(candidate);
+                              setShowEditShortlistModal(true);
+                            }}
+                            title="Edit Shortlist"
+                          >
+                            📋
+                          </button>
+                        </div>
+                      </td>
+                      <td className="px-3 py-2">
+                        <div className="flex gap-2">
+                          <button 
+                            className="bg-blue-500 hover:bg-blue-600 text-white font-bold px-3 py-1 rounded-lg text-sm"
+                            onClick={() => {
+                              setSelectedCandidate(candidate);
+                              setShowEditCandidateModal(true);
+                            }}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="bg-red-600 hover:bg-red-700 text-white font-bold px-3 py-1 rounded-lg text-sm"
+                            onClick={() => handleDeleteCandidate(candidate._id)}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                });
+              })()}
+            </tbody>
+          </table>
         </div>
       </div>
     </PageLayout>

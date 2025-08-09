@@ -1,62 +1,77 @@
 import React from "react";
 import PageLayout from "./PageLayout";
-import { mockCompanies, mockCandidates, mockBets } from './mockData';
+import axios from 'axios';
 import CompanyShortlistModal from './CompanyShortlistModal';
 import { motion } from "framer-motion";
 
-export default function ExpiredBets({ user, showUserGuideModal, setShowUserGuideModal, showAnnouncement, setShowAnnouncement, announcementIdx, announcements, isSliding }) {
+export default function ExpiredBets({ user, showUserGuideModal, setShowUserGuideModal }) {
   const [modalOpen, setModalOpen] = React.useState(false);
   const [selectedCompany, setSelectedCompany] = React.useState(null);
   const [search, setSearch] = React.useState("");
   const [modalCandidates, setModalCandidates] = React.useState([]);
+  const [companies, setCompanies] = React.useState([]);
+  const [bets, setBets] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState(null);
+
+  React.useEffect(() => {
+    const fetchExpired = async () => {
+      try {
+        const [eventsRes, betsRes] = await Promise.all([
+          axios.get('http://localhost:5000/api/events/expired'),
+          axios.get('http://localhost:5000/api/bets/expired')
+        ]);
+        setCompanies(eventsRes.data || []);
+        setBets(betsRes.data || []);
+      } catch (err) {
+        console.error('Failed to fetch expired companies/bets', err);
+        setError('Could not load expired bets');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchExpired();
+  }, []);
 
   // Helper: check if company is expired
-  const isExpired = (company) => {
-    if (company.status === 'expired') return true;
-    if (!company.expiresOn) return false;
-    const today = new Date();
-    const expiryDate = new Date(company.expiresOn);
-    return today > expiryDate;
-  };
+  const isExpired = (company) => company.status !== 'active';
 
-  // Filter companies by search (only show companies where results ARE declared)
+  // Filter companies by search (include pending and expired)
   const filteredCompanies = React.useMemo(() => {
-    let companies = mockCompanies.filter(c => {
-      // Show companies where results ARE declared (any candidate has result other than 'awaited')
-      return c.candidates && c.candidates.some(cand => cand.result !== 'awaited');
-    });
-    
-    if (!search.trim()) return companies;
+    const list = companies || [];
+    const expired = list.filter(c => c.status !== 'active');
+    if (!search.trim()) return expired;
     const term = search.trim().toLowerCase();
-    return companies.filter(c =>
-      c.name.toLowerCase().includes(term) ||
-      (c.role && c.role.toLowerCase().includes(term))
+    return expired.filter(c =>
+      (c.companyName || '').toLowerCase().includes(term) ||
+      (c.jobProfile || '').toLowerCase().includes(term)
     );
-  }, [search]);
+  }, [search, companies]);
 
   // Get candidate verdicts for a company
   function getCompanyCandidates(company) {
-    const cands = (company.shortlist || []).map(candidateId => {
-      const cand = mockCandidates.find(c => c.id === candidateId);
-      // Find bets for this candidate in this company
-      const bets = mockBets.filter(b => b.companyId === company.id && b.candidateId === candidateId);
-      // Aggregate tokens betted and against
+    const cands = (company.candidates || []).map(c => {
+      const related = bets.filter(b => b.companyEvent?._id === company._id && b.candidate?._id === c._id);
       let forTokens = 0, againstTokens = 0;
-      bets.forEach(bet => {
-        if (bet.type === 'for') forTokens += Number(bet.amount);
-        else againstTokens += Number(bet.amount);
+      related.forEach(b => {
+        if (b.type === 'for') forTokens += Number(b.amount) || 0;
+        else againstTokens += Number(b.amount) || 0;
       });
-      
-      // Get result from company candidates data or default to 'awaited'
-      const candidateResult = company.candidates?.find(c => c.enrollment === cand?.enrollment)?.result || 'awaited';
-      
+      // Mark verdict based on company status
+      let verdict = 'awaited';
+      if (company.status === 'expired') {
+        const isWinner = (company.winningCandidates || []).some(id => String(id) === String(c._id));
+        verdict = isWinner ? 'selected' : 'not_selected';
+      } else if (company.status === 'pending') {
+        verdict = 'awaited';
+      }
       return {
-        id: cand?.id || candidateId,
-        name: cand?.name || candidateId,
-        enrollment: cand?.enrollment || candidateId,
+        id: c._id,
+        name: c.name,
+        enrollment: c.enrollmentNumber,
         forTokens,
         againstTokens,
-        verdict: candidateResult === 'selected' ? 'selected' : candidateResult === 'not_selected' ? 'not selected' : 'awaited'
+        verdict
       };
     });
     return cands;
@@ -71,7 +86,7 @@ export default function ExpiredBets({ user, showUserGuideModal, setShowUserGuide
 
   // Helper: get total tokens betted on a company (for + against)
   function getTotalTokens(company) {
-    return mockBets.filter(bet => bet.companyId === company.id)
+    return bets.filter(bet => bet.companyEvent?._id === company._id)
       .reduce((sum, bet) => sum + (Number(bet.amount) || 0), 0);
   }
 
@@ -88,15 +103,8 @@ export default function ExpiredBets({ user, showUserGuideModal, setShowUserGuide
   }
 
   return (
-    <PageLayout
-      user={user}
-      onUserGuide={() => setShowUserGuideModal(true)}
-      showAnnouncement={showAnnouncement}
-      setShowAnnouncement={setShowAnnouncement}
-      announcementIdx={announcementIdx}
-      announcements={announcements}
-      isSliding={isSliding}
-    >
+    <PageLayout user={user} onUserGuide={() => setShowUserGuideModal(true)}>
+      {loading ? <div className="text-white">Loading...</div> : error ? <div className="text-red-400">{error}</div> : null}
       <div className="w-full flex flex-col items-center mb-6 mt-0">
         <motion.h1
           initial={{ opacity: 0, y: -30 }}
@@ -140,9 +148,9 @@ export default function ExpiredBets({ user, showUserGuideModal, setShowUserGuide
             <span className="text-2xl text-[#28c76f] font-bold mb-2">No results found</span>
             <span className="text-lg text-gray-400">Try searching for another company or profile! 🚀</span>
           </motion.div>
-        ) : filteredCompanies.map(company => (
+        ) : (filteredCompanies || []).map(company => (
           <motion.div
-            key={company.id}
+            key={company?._id || company?.id}
             variants={{ hidden: { opacity: 0, x: -40 }, visible: { opacity: 1, x: 0, transition: { duration: 0.5 } } }}
             className="relative rounded-2xl border transition-all duration-200 p-0 flex flex-col min-h-[220px] w-full group hover:scale-[1.045] hover:shadow-2xl min-w-[200px]"
             style={{
@@ -157,29 +165,29 @@ export default function ExpiredBets({ user, showUserGuideModal, setShowUserGuide
             onClick={() => openModal(company)}
           >
             <div className="flex items-center justify-between px-4 pt-4 pb-1">
-              <span className="text-2xl font-bold text-[#28c76f]">{company.name}</span>
+              <span className="text-2xl font-bold text-[#28c76f]">{company?.companyName || '—'}</span>
               <span className="flex items-center gap-1 bg-[#232b2b] text-[#28c76f] font-semibold text-base px-3 py-1 rounded-full border border-[#28c76f]/40">
                 <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#28c76f" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2h5" /><circle cx="12" cy="7" r="4" /></svg>
-                {company.shortlist.length}
+                {(company?.candidates?.length || 0)}
               </span>
             </div>
             <div className="px-4 flex items-center justify-between text-gray-400 text-sm mb-1 gap-2">
               <span className="flex items-center gap-1 text-[#28c76f] font-semibold">
                 <svg width='18' height='18' fill='none' viewBox='0 0 24 24' stroke='#28c76f' strokeWidth='2'><circle cx='12' cy='12' r='10' /><path d='M12 6v6l4 2' /></svg>
-                {company.role}
+                {company?.jobProfile || '—'}
               </span>
               <span className="flex items-center gap-1">
-                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#28c76f" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M3 17v-2a4 4 0 014-4h10a4 4 0 014 4v2" /></svg>
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#28c76f" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M3 17v-2a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v2" /></svg>
                 {getTotalTokens(company).toLocaleString()} tokens
               </span>
             </div>
             <div className="px-4 pt-1 pb-3">
               <div className="font-semibold text-gray-200 mb-2">Results:</div>
               <div className="flex flex-col gap-2">
-                {getTopCandidates(company).length > 0 ? getTopCandidates(company).map(cand => (
+                {(getTopCandidates(company) || []).length > 0 ? getTopCandidates(company).map(cand => (
                   <div key={cand.id} className="flex items-center justify-between bg-[#2d3235] rounded-lg px-3 py-1.5">
                     <span className="font-bold text-white">{cand.name}</span>
-                    <span className={`px-3 py-1 rounded text-xs font-bold ${cand.verdict === 'selected' ? 'bg-[#28c76f] text-white' : 'bg-red-500 text-white'}`}>{cand.verdict === 'selected' ? 'Selected' : 'Not Selected'}</span>
+                    <span className={`px-3 py-1 rounded text-xs font-bold ${cand.verdict === 'selected' ? 'bg-[#28c76f] text-white' : cand.verdict === 'awaited' ? 'bg-blue-600 text-white' : 'bg-red-600 text-white'}`}>{cand.verdict === 'selected' ? 'Selected' : cand.verdict === 'awaited' ? 'Awaited' : 'Not Selected'}</span>
                   </div>
                 )) : (
                   <div className="text-gray-400">No results</div>
@@ -197,32 +205,35 @@ export default function ExpiredBets({ user, showUserGuideModal, setShowUserGuide
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
           <div className="bg-[#232b2b] rounded-lg shadow-2xl p-8 min-w-[340px] max-w-full relative border-2 border-[#28c76f]" style={{ borderRadius: 12 }}>
             <button className="absolute top-3 right-4 text-gray-400 hover:text-[#28c76f] text-2xl font-bold" onClick={closeModal}>&times;</button>
-            <div className="text-2xl font-bold text-[#28c76f] mb-2">{selectedCompany.name} - {selectedCompany.role}</div>
+            <div className="text-2xl font-bold text-[#28c76f] mb-2">{selectedCompany?.companyName || '—'} - {selectedCompany?.jobProfile || '—'}</div>
             <div className="mb-4 text-gray-300">Shortlisted Candidates:</div>
-            <table className="min-w-full text-sm mb-2">
-              <thead>
-                <tr className="text-[#28c76f]">
-                  <th className="px-3 py-2 text-left">Name</th>
-                  <th className="px-3 py-2 text-left">Enrollment</th>
-                  <th className="px-3 py-2 text-right">For Tokens</th>
-                  <th className="px-3 py-2 text-right">Against Tokens</th>
-                  <th className="px-3 py-2 text-center">Verdict</th>
-                </tr>
-              </thead>
-              <tbody>
-                {modalCandidates.map(cand => (
-                  <tr key={cand.id}>
-                    <td className="px-3 py-2 text-white font-semibold">{cand.name}</td>
-                    <td className="px-3 py-2 text-gray-200">{cand.enrollment}</td>
-                    <td className="px-3 py-2 text-right text-[#28c76f]">{cand.forTokens}</td>
-                    <td className="px-3 py-2 text-right text-red-400">{cand.againstTokens}</td>
-                    <td className="px-3 py-2 text-center">
-                      <span className={`px-3 py-1 rounded text-xs font-bold ${cand.verdict === 'selected' ? 'bg-[#28c76f] text-white' : 'bg-red-500 text-white'}`}>{cand.verdict === 'selected' ? 'Selected' : 'Not Selected'}</span>
-                    </td>
+            {/* Scrollable candidate list */}
+            <div className="max-h-96 overflow-y-auto">
+              <table className="min-w-full text-sm mb-2">
+                <thead>
+                  <tr className="text-[#28c76f]">
+                    <th className="px-3 py-2 text-left">Name</th>
+                    <th className="px-3 py-2 text-left">Enrollment</th>
+                    <th className="px-3 py-2 text-right">For Tokens</th>
+                    <th className="px-3 py-2 text-right">Against Tokens</th>
+                    <th className="px-3 py-2 text-center">Verdict</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {(modalCandidates || []).map(cand => (
+                    <tr key={cand.id}>
+                      <td className="px-3 py-2 text-white font-semibold">{cand.name}</td>
+                      <td className="px-3 py-2 text-gray-200">{cand.enrollment}</td>
+                      <td className="px-3 py-2 text-right text-[#28c76f]">{cand.forTokens}</td>
+                      <td className="px-3 py-2 text-right text-red-400">{cand.againstTokens}</td>
+                      <td className="px-3 py-2 text-center">
+                        <span className={`px-3 py-1 rounded text-xs font-bold ${cand.verdict === 'selected' ? 'bg-[#28c76f] text-white' : cand.verdict === 'awaited' ? 'bg-blue-600 text-white' : 'bg-red-600 text-white'}`}>{cand.verdict === 'selected' ? 'Selected' : cand.verdict === 'awaited' ? 'Awaited' : 'Not Selected'}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}

@@ -88,7 +88,18 @@ const mahabharataCandidates = mahabharataNames.map((name, idx) => {
   const n = 2 + Math.floor(Math.random()*3);
   const shuffled = [...companyIds].sort(() => 0.5 - Math.random());
   const shortlistedIn = shuffled.slice(0, n);
-  return { id, name, enrollment, branch, shortlistedIn };
+  // Extract course from branch name
+  let course = "B.Tech";
+  if (branch.includes("IDD")) {
+    course = "IDD";
+  } else if (branch.includes("M.Tech")) {
+    course = "M.Tech";
+  } else if (branch.includes("Ph.D")) {
+    course = "Ph.D";
+  } else if (branch.includes("B.Arch")) {
+    course = "B.Arch";
+  }
+  return { id, name, enrollment, branch, course, shortlistedIn };
 });
 
 export const mockCandidates = [
@@ -97,7 +108,18 @@ export const mockCandidates = [
     const enrollment = randomEnrollment(idx);
     const branch = branches[Math.floor(Math.random() * branches.length)];
     const shortlistedIn = getRandomShortlists(companyIds);
-    return { id, name, enrollment, branch, shortlistedIn };
+    // Extract course from branch name
+    let course = "B.Tech";
+    if (branch.includes("IDD")) {
+      course = "IDD";
+    } else if (branch.includes("M.Tech")) {
+      course = "M.Tech";
+    } else if (branch.includes("Ph.D")) {
+      course = "Ph.D";
+    } else if (branch.includes("B.Arch")) {
+      course = "B.Arch";
+    }
+    return { id, name, enrollment, branch, course, shortlistedIn };
   }),
   ...mahabharataCandidates
 ];
