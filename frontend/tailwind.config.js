@@ -1,6 +1,15 @@
 module.exports = {
   content: [
-    "./src/**/*.{js,jsx,ts,tsx}", // 👈 tells Tailwind to scan all files in src
+    "./src/**/*.{js,jsx,ts,tsx}",
+    "./public/index.html",
+  ],
+  safelist: [
+    // keep dynamic dark classes in production
+    'bg-[#0b1412]',
+    'bg-[#0d1a17]',
+    'text-white',
+    'text-gray-200',
+    'border-[#28c76f]/20',
   ],
   theme: {
     extend: {

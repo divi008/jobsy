@@ -2,10 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  background: #0b1412;
-  color: #e5e7eb;
-  transition: background 0.4s ease, color 0.4s ease;
+/* Ensure consistent dark site background in production builds too */
+:root {
+  color-scheme: dark;
+}
+
+/* Cover full viewport with dark background irrespective of Tailwind purging */
+#root {
+  min-height: 100vh;
+  background: radial-gradient(circle at 50% 0%, #0b1412 0%, #0b1412 35%, #0d1a17 65%, #0b1412 100%);
 }
 
 .swiper-pagination-bullet {
