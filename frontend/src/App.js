@@ -432,7 +432,7 @@ function LandingPage({ loadUser }) {
       )}
       {/* Removed duplicate OTP-only modal to avoid confusion */}
       {/* Main Content (always rendered) */}
-      <div className="min-h-screen w-full flex items-center justify-center bg-[radial-gradient(circle_at_50%_0%,_#0b1412,_#0b1412_35%,_#0d1a17_65%,_#0b1412_100%)]">
+      <div className="min-h-screen w-full flex items-center justify-center">
         <motion.div
           className="relative z-10 flex flex-col md:flex-row gap-16 w-full max-w-7xl px-6 items-start"
           initial="hidden"
@@ -448,7 +448,7 @@ function LandingPage({ loadUser }) {
               hidden: { opacity: 0, y: 40 },
               visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
             }}
-            className={`flex-1 max-w-full md:max-w-[48%] bg-[#181f1f] text-white border border-[#28c76f]/20 rounded-2xl shadow-[0_10px_25px_rgba(0,0,0,0.35)] px-12 py-10 flex flex-col justify-center overflow-auto transition-all duration-500 ${
+            className={`flex-1 max-w-full md:max-w-[48%] bg-white rounded-2xl shadow-[0_10px_25px_rgba(0,0,0,0.05)] px-12 py-10 flex flex-col justify-center overflow-auto transition-all duration-500 ${
               activeTab === "signup" ? "min-h-[650px]" : "min-h-[400px]"
             } hover:shadow-[0_0_24px_4px_rgba(34,197,94,0.15)]`}
           >
@@ -457,7 +457,7 @@ function LandingPage({ loadUser }) {
               <img src="pngkey.com-poker-chips-png-594513.png" alt="Jobsy Logo" className="w-16 h-16 rounded-full shadow-lg" />
               <h1 className="text-4xl font-bold text-green-600 drop-shadow-lg">Jobsy</h1>
             </div>
-            <p className="text-center text-gray-300 mt-2 text-lg font-medium break-words">
+            <p className="text-center text-gray-700 mt-2 text-lg font-medium break-words">
               Placement Data that Works for You | Real-Time Insights, Smart Predictions!
             </p>
             {/* Tabs */}
@@ -483,11 +483,11 @@ function LandingPage({ loadUser }) {
             <form className="space-y-5" onSubmit={onSubmit}>
   {activeTab === "signup" && (
     <>
-          <div>
-            <label className="block text-base text-slate-300 mb-2">Full Name</label>
-            <input
-              type="text"
-              className="w-full px-5 py-3 rounded-md bg-[#232b2b] border border-[#28c76f]/30 shadow-sm focus:ring-2 focus:ring-green-400 focus:outline-none text-gray-200 text-base transition-all duration-200"
+      <div>
+        <label className="block text-base text-slate-400 mb-2">Full Name</label>
+        <input
+          type="text"
+          className="w-full px-5 py-3 rounded-md bg-slate-100 border border-slate-300 shadow-sm focus:ring-2 focus:ring-green-400 focus:outline-none text-slate-900 text-base transition-all duration-200"
           placeholder="Jon Snow"
           name="name"
           value={name}
@@ -496,10 +496,10 @@ function LandingPage({ loadUser }) {
         />
       </div>
       <div>
-            <label className="block text-base text-slate-300 mb-2">Enrollment Number</label>
-            <input
-              type="text"
-              className="w-full px-5 py-3 rounded-md bg-[#232b2b] border border-[#28c76f]/30 shadow-sm focus:ring-2 focus:ring-green-400 focus:outline-none text-gray-200 text-base transition-all duration-200"
+        <label className="block text-base text-slate-400 mb-2">Enrollment Number</label>
+        <input
+          type="text"
+          className="w-full px-5 py-3 rounded-md bg-slate-100 border border-slate-300 shadow-sm focus:ring-2 focus:ring-green-400 focus:outline-none text-slate-900 text-base transition-all duration-200"
           placeholder="12345678"
           name="enrollmentNumber"
           value={enrollmentNumber}
@@ -510,11 +510,11 @@ function LandingPage({ loadUser }) {
     </>
   )}
   <div>
-    <label className="block text-base text-slate-300 mb-2">Email</label>
+    <label className="block text-base text-slate-400 mb-2">Email</label>
     <div className="flex gap-2">
       <input
         type="email"
-        className="flex-1 px-5 py-3 rounded-md bg-[#232b2b] border border-[#28c76f]/30 shadow-sm focus:ring-2 focus:ring-green-400 focus:outline-none text-gray-200 text-base transition-all duration-200"
+        className="flex-1 px-5 py-3 rounded-md bg-slate-100 border border-slate-300 shadow-sm focus:ring-2 focus:ring-green-400 focus:outline-none text-slate-900 text-base transition-all duration-200"
         placeholder="valar.morghulis.got21@itbhu.ac.in"
         name="email"
         value={email}
@@ -541,10 +541,10 @@ function LandingPage({ loadUser }) {
     )}
   </div>
   <div>
-    <label className="block text-base text-slate-300 mb-2">Password</label>
+    <label className="block text-base text-slate-400 mb-2">Password</label>
     <input
       type="password"
-      className="w-full px-5 py-3 rounded-md bg-[#232b2b] border border-[#28c76f]/30 shadow-sm focus:ring-2 focus:ring-green-400 focus:outline-none text-gray-200 text-base transition-all duration-200"
+      className="w-full px-5 py-3 rounded-md bg-slate-100 border border-slate-300 shadow-sm focus:ring-2 focus:ring-green-400 focus:outline-none text-slate-900 text-base transition-all duration-200"
       placeholder="********"
       name="password"
       value={password}
@@ -555,10 +555,10 @@ function LandingPage({ loadUser }) {
   </div>
   {activeTab === "signup" && (
     <div>
-      <label className="block text-base text-slate-300 mb-2">Confirm Password</label>
+      <label className="block text-base text-slate-400 mb-2">Confirm Password</label>
       <input
         type="password"
-        className="w-full px-5 py-3 rounded-md bg-[#232b2b] border border-[#28c76f]/30 shadow-sm focus:ring-2 focus:ring-green-400 focus:outline-none text-gray-200 text-base transition-all duration-200"
+        className="w-full px-5 py-3 rounded-md bg-slate-100 border border-slate-300 shadow-sm focus:ring-2 focus:ring-green-400 focus:outline-none text-slate-900 text-base transition-all duration-200"
         placeholder="Confirm your password"
         name="confirmPassword"
         value={confirmPassword}
@@ -592,9 +592,9 @@ function LandingPage({ loadUser }) {
               hidden: { opacity: 0, y: 40 },
               visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
             }}
-            className="flex-1 max-w-full md:max-w-[48%] bg-[#181f1f] text-gray-200 border border-[#28c76f]/20 rounded-2xl shadow-[0_10px_25px_rgba(0,0,0,0.35)] px-12 py-10 flex flex-col justify-center overflow-auto transition-all duration-300 hover:shadow-[0_0_24px_4px_rgba(34,197,94,0.15)] h-[600px]"
+            className="flex-1 max-w-full md:max-w-[48%] bg-white rounded-2xl shadow-[0_10px_25px_rgba(0,0,0,0.05)] px-12 py-10 flex flex-col justify-center overflow-auto transition-all duration-300 hover:shadow-[0_0_24px_4px_rgba(34,197,94,0.15)] h-[600px]"
           >
-            <h2 className="text-4xl font-bold text-green-400 mb-6 drop-shadow-lg">How It Works ?</h2>
+            <h2 className="text-4xl font-bold text-green-600 mb-6 drop-shadow-lg">How It Works ?</h2>
             <ol className="space-y-5 text-slate-500 text-base break-words">
               <li className="flex items-start">
                 <span className="bg-gradient-to-tr from-green-500 to-green-600 text-white font-bold rounded-full w-12 h-12 flex items-center justify-center mr-6 text-2xl shadow-lg">1</span>
