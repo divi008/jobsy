@@ -90,9 +90,9 @@ useEffect(() => {
     try {
       // Fetch all required data at the same time
       const [eventsRes, candidatesRes, betsRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/events/active'),
-        axios.get('http://localhost:5000/api/candidates'),
-        axios.get('http://localhost:5000/api/bets'),
+        axios.get(`${process.env.REACT_APP_API_URL}/api/events/active`),
+        axios.get(`${process.env.REACT_APP_API_URL}/api/candidates`),
+        axios.get(`${process.env.REACT_APP_API_URL}/api/bets`),
       ]);
       // Only keep active companies
       setActiveEvents(eventsRes.data.filter(e => e.status === 'active'));

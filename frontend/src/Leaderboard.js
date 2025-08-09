@@ -56,7 +56,7 @@ export default function Leaderboard(props) {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/users/leaderboard');
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/users/leaderboard`);
         const formattedUsers = res.data.map(dbUser => ({
           ...dbUser,
           id: dbUser._id || dbUser.id,

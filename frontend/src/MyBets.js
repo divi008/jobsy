@@ -15,7 +15,7 @@ export default function MyBets({ user, tokens, setTokens, bets, setBets, showUse
       setLoading(true);
       setError(null);
       try {
-        const res = await axios.get(`http://localhost:5000/api/bets/user/${user._id}`);
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/bets/user/${user._id}`);
         const data = res.data || [];
         setMyBets(data);
         setBets && setBets(data);

@@ -18,8 +18,8 @@ export default function Shortlists({ user, showUserGuideModal, setShowUserGuideM
     setLoading(true);
     try {
       const [candRes, eventsRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/candidates'),
-        axios.get('http://localhost:5000/api/events')
+        axios.get(`${process.env.REACT_APP_API_URL}/api/candidates`),
+        axios.get(`${process.env.REACT_APP_API_URL}/api/events`)
       ]);
       setCandidates(candRes.data || []);
       const byId = {};

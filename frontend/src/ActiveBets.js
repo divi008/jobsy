@@ -45,8 +45,8 @@ export default function ActiveBets({ user, showUserGuideModal, setShowUserGuideM
           setLoading(true);
           try {
               const [companiesRes, betsRes] = await Promise.all([
-                  axios.get('http://localhost:5000/api/events/active'),
-                  axios.get('http://localhost:5000/api/bets/active')
+                  axios.get(`${process.env.REACT_APP_API_URL}/api/events/active`),
+                  axios.get(`${process.env.REACT_APP_API_URL}/api/bets/active`)
               ]);
               setActiveCompanies(companiesRes.data);
               setActiveBetsData(betsRes.data);

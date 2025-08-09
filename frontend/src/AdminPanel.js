@@ -186,7 +186,7 @@ function AddIndividualModal({ open, onClose, onSubmit }) {
     try {
       // Check in backend candidates
       if (enrollment.trim()) {
-        const res = await axios.post('http://localhost:5000/api/candidates/lookup', { enrollmentNumber: enrollment }, {
+        const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/candidates/lookup`, { enrollmentNumber: enrollment }, {
           headers: { 'x-auth-token': localStorage.getItem('token') || '' }
         });
         if (res.data) {
@@ -258,7 +258,7 @@ function AddIndividualModal({ open, onClose, onSubmit }) {
     // Auto-fill data when enrollment changes
     if (field === 'enrollment' && value.trim()) {
       try {
-        const res = await axios.post('http://localhost:5000/api/candidates/lookup', { enrollmentNumber: value }, {
+        const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/candidates/lookup`, { enrollmentNumber: value }, {
           headers: { 'x-auth-token': localStorage.getItem('token') || '' }
         });
         if (res.data) {
@@ -706,7 +706,7 @@ function EditCompanyModal({ open, onClose, onSubmit, company, onRefresh }) {
     // Auto-fill data when enrollment changes
     if (field === 'enrollment' && value.trim()) {
       try {
-        const res = await axios.post('http://localhost:5000/api/candidates/lookup', { enrollmentNumber: value }, {
+        const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/candidates/lookup`, { enrollmentNumber: value }, {
           headers: { 'x-auth-token': localStorage.getItem('token') || '' }
         });
         if (res.data) {
@@ -749,7 +749,7 @@ function EditCompanyModal({ open, onClose, onSubmit, company, onRefresh }) {
     }
 
     try {
-      const res = await axios.post(`http://localhost:5000/api/admin/companies/${company.id || company._id}/candidates`, {
+      const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/admin/companies/${company.id || company._id}/candidates`, {
         name: newCandidate.name,
         enrollmentNumber: newCandidate.enrollment,
         branch: newCandidate.branch,
@@ -967,7 +967,7 @@ function EditCompanyModal({ open, onClose, onSubmit, company, onRefresh }) {
                 <div className="flex gap-2">
                   <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-2 rounded" onClick={async () => {
                     try {
-                      await axios.put(`http://localhost:5000/api/admin/companies/${company.id || company._id}/candidates/${candidate.id}`, {
+                      await axios.put(`${process.env.REACT_APP_API_URL}/api/admin/companies/${company.id || company._id}/candidates/${candidate.id}`, {
                         name: candidate.name,
                         enrollmentNumber: candidate.enrollment,
                         branch: candidate.branch,
@@ -986,7 +986,7 @@ function EditCompanyModal({ open, onClose, onSubmit, company, onRefresh }) {
                   <button className="bg-red-600 hover:bg-red-700 text-white font-bold px-3 py-2 rounded" onClick={async () => {
                     if (!window.confirm('Remove from shortlist?')) return;
                     try {
-                      const res = await axios.delete(`http://localhost:5000/api/admin/companies/${company.id || company._id}/candidates/${candidate.id}`, { headers: { 'x-auth-token': localStorage.getItem('token') || '' } });
+                      const res = await axios.delete(`${process.env.REACT_APP_API_URL}/api/admin/companies/${company.id || company._id}/candidates/${candidate.id}`, { headers: { 'x-auth-token': localStorage.getItem('token') || '' } });
                       const ev = res.data;
                       setCandidates((ev.candidates || []).map(c => ({ id: c._id, name: c.name, enrollment: c.enrollmentNumber, branch: c.branch, course: c.course })));
                     } catch (err) {
@@ -1403,9 +1403,9 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
     const fetchAdminData = async () => {
       try {
         const [eventsRes, betsRes, candidatesRes] = await Promise.all([
-          axios.get('http://localhost:5000/api/events'),
-          axios.get('http://localhost:5000/api/bets'),
-          axios.get('http://localhost:5000/api/admin/candidates', {
+          axios.get(`${process.env.REACT_APP_API_URL}/api/events`),
+          axios.get(`${process.env.REACT_APP_API_URL}/api/bets`),
+          axios.get(`${process.env.REACT_APP_API_URL}/api/admin/candidates`, {
             headers: { 'x-auth-token': localStorage.getItem('token') || '' }
           })
         ]);
@@ -1429,7 +1429,7 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
       } catch (err) {
         console.error('Failed to fetch admin data', err);
         // Fallback to mock if backend not available
-        setCompanies([...mockCompanies]);
+    setCompanies([...mockCompanies]);
         setCandidates([...mockCandidates]);
       }
     };
@@ -1460,7 +1460,7 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
       liveEventSection: newCompany.liveEventSection,
         candidates: []
       };
-      const res = await axios.post('http://localhost:5000/api/admin/companies', payload, {
+      const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/admin/companies`, payload, {
         headers: { 'x-auth-token': localStorage.getItem('token') || '' }
       });
       alert('✅ Company created');
@@ -1482,7 +1482,7 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
         status: updatedCompany.status
       };
       const targetId = updatedCompany._id || updatedCompany.id;
-      await axios.put(`http://localhost:5000/api/admin/companies/${targetId}`, payload, {
+      await axios.put(`${process.env.REACT_APP_API_URL}/api/admin/companies/${targetId}`, payload, {
         headers: { 'x-auth-token': localStorage.getItem('token') || '' }
       });
       alert('✅ Company updated');
@@ -1494,7 +1494,7 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
   };
 
   const handleUpdateResults = (companyId, winningCandidateIds) => {
-    axios.post(`http://localhost:5000/api/admin/events/${companyId}/update-results`, {
+    axios.post(`${process.env.REACT_APP_API_URL}/api/admin/events/${companyId}/update-results`, {
       winningCandidateIds
     }, {
       headers: { 'x-auth-token': localStorage.getItem('token') || '' }
@@ -1516,7 +1516,7 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
 
   const handleUpdateCarousel = async (selectedCompanyIds) => {
     try {
-      await axios.post('http://localhost:5000/api/admin/feature', { featuredIds: selectedCompanyIds }, {
+      await axios.post(`${process.env.REACT_APP_API_URL}/api/admin/feature`, { featuredIds: selectedCompanyIds }, {
         headers: { 'x-auth-token': localStorage.getItem('token') || '' }
       });
       alert('✅ Carousel updated');
@@ -1546,7 +1546,7 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
         return;
       }
       
-      await axios.put(`http://localhost:5000/api/admin/candidates/${selectedCandidate._id}`, updatedCandidate, {
+      await axios.put(`${process.env.REACT_APP_API_URL}/api/admin/candidates/${selectedCandidate._id}`, updatedCandidate, {
         headers: { 'x-auth-token': localStorage.getItem('token') || '' }
       });
       alert('✅ Candidate updated successfully');
@@ -1569,7 +1569,7 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
       return;
     }
     try {
-      await axios.delete(`http://localhost:5000/api/admin/candidates/${candidateId}`, {
+      await axios.delete(`${process.env.REACT_APP_API_URL}/api/admin/candidates/${candidateId}`, {
         headers: { 'x-auth-token': localStorage.getItem('token') || '' }
       });
       alert('✅ Candidate deleted successfully');
@@ -1582,7 +1582,7 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
 
   const handleUpdateShortlist = async (candidateId, selectedCompanyIds) => {
     try {
-      await axios.put(`http://localhost:5000/api/admin/candidates/${candidateId}/shortlist`, {
+      await axios.put(`${process.env.REACT_APP_API_URL}/api/admin/candidates/${candidateId}/shortlist`, {
         companyIds: selectedCompanyIds
       }, {
         headers: { 'x-auth-token': localStorage.getItem('token') || '' }
@@ -1733,7 +1733,7 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
                           onClick={async () => {
                             if (!window.confirm('Delete this company and all its bets?')) return;
                             try {
-                              await axios.delete(`http://localhost:5000/api/admin/companies/${company._id || company.id}`, { headers: { 'x-auth-token': localStorage.getItem('token') || '' } });
+                              await axios.delete(`${process.env.REACT_APP_API_URL}/api/admin/companies/${company._id || company.id}`, { headers: { 'x-auth-token': localStorage.getItem('token') || '' } });
                               setRefresh(r => r + 1);
                             } catch (err) {
                               console.error(err);

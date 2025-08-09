@@ -13,7 +13,7 @@ export default function UserProfilePage({ user, onUserGuide, showAnnouncement, s
       if (!user?._id) { setLoading(false); return; }
       try {
         setLoading(true);
-        const res = await axios.get(`http://localhost:5000/api/bets/user/${user._id}`);
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/bets/user/${user._id}`);
         setBets(res.data || []);
       } catch (err) {
         setError('Could not load user bets.');

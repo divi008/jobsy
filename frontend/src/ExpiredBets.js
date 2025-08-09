@@ -18,8 +18,8 @@ export default function ExpiredBets({ user, showUserGuideModal, setShowUserGuide
     const fetchExpired = async () => {
       try {
         const [eventsRes, betsRes] = await Promise.all([
-          axios.get('http://localhost:5000/api/events/expired'),
-          axios.get('http://localhost:5000/api/bets/expired')
+          axios.get(`${process.env.REACT_APP_API_URL}/api/events/expired`),
+          axios.get(`${process.env.REACT_APP_API_URL}/api/bets/expired`)
         ]);
         setCompanies(eventsRes.data || []);
         setBets(betsRes.data || []);

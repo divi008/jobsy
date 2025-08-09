@@ -66,7 +66,7 @@ function LandingPage({ loadUser }) {
     }
     
     setIsLoading(true);
-    const url = activeTab === 'login' ? 'http://localhost:5000/api/auth/login' : 'http://localhost:5000/api/auth/signup';
+    const url = activeTab === 'login' ? `${process.env.REACT_APP_API_URL}/api/auth/login` : `${process.env.REACT_APP_API_URL}/api/auth/signup`;
     const body = activeTab === 'login' ? { email, password } : { name, email, enrollmentNumber, password };
     
     try {
@@ -110,7 +110,7 @@ function LandingPage({ loadUser }) {
         payload.enrollmentNumber = enrollmentNumber;
       }
       
-      const response = await axios.post('http://localhost:5000/api/auth/send-verification-email', payload);
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/send-verification-email`, payload);
       if (response.data && response.data.msg) {
         alert(response.data.msg + '\n\nFor testing: Check the backend console for the OTP.');
       } else {
@@ -138,7 +138,7 @@ function LandingPage({ loadUser }) {
     
     setIsLoading(true);
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/verify-email', { email, otp });
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/verify-email`, { email, otp });
       setIsEmailVerified(true);
       setShowEmailVerificationModal(false);
       setShowOtpModal(false);
@@ -168,7 +168,7 @@ function LandingPage({ loadUser }) {
     
     setIsLoading(true);
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/send-reset-otp', { email: resetEmail });
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/send-reset-otp`, { email: resetEmail });
       setShowOtpModal(true);
       if (response.data && response.data.msg) {
         alert(response.data.msg + '\n\nFor testing: Check the backend console for the OTP.');
@@ -201,7 +201,7 @@ function LandingPage({ loadUser }) {
     
     setIsLoading(true);
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/reset-password', {
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/reset-password`, {
         email: resetEmail,
         otp: resetOtp,
         newPassword
@@ -830,8 +830,8 @@ function UserProfileWrapper(props) {
       try {
         setLoading(true);
         const [userRes, betsRes] = await Promise.all([
-          axios.get(`http://localhost:5000/api/users/profile/${userId}`),
-          axios.get(`http://localhost:5000/api/bets/user/${userId}`)
+          axios.get(`${process.env.REACT_APP_API_URL}/api/users/profile/${userId}`),
+          axios.get(`${process.env.REACT_APP_API_URL}/api/bets/user/${userId}`)
         ]);
         setProfileData({ user: userRes.data, bets: betsRes.data });
       } catch (err) {
@@ -858,7 +858,7 @@ export default function App() {
     if (token) {
       setAuthToken(token);
       try {
-        const res = await axios.get('http://localhost:5000/api/auth/me');
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/auth/me`);
         setUser(res.data);
       } catch (err) {
         localStorage.removeItem('token');

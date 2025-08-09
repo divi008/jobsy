@@ -61,7 +61,7 @@ export default function CompanyShortlistModal({ open, user,onClose, company,acti
     if (betsToPlace.length > 0) {
       try {
         const res = await axios.post(
-          'http://localhost:5000/api/bets',
+          `${process.env.REACT_APP_API_URL}/api/bets`,
           { betsToPlace, totalBetAmount: totalBet },
           { headers: { 'x-auth-token': localStorage.getItem('token') || '' } }
         );
