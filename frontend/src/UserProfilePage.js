@@ -68,11 +68,11 @@ export default function UserProfilePage({ user, onUserGuide, showAnnouncement, s
             <div className="flex items-center gap-3 mb-1">
               <span className="text-2xl md:text-3xl font-bold text-[#28c76f]">{user.name}</span>
             </div>
-            <div className="text-gray-900 text-base md:text-lg mb-1">{user.email}</div>
-            <div className="text-gray-900 text-base md:text-lg mb-1">Enrollment No: <span className="font-semibold">{enrollment}</span></div>
-            <div className="text-gray-500 text-sm md:text-base mb-4">{(user.tokens || 0).toLocaleString()} Tokens</div>
+            <div className="text-white text-base md:text-lg mb-1">{user.email}</div>
+            <div className="text-white text-base md:text-lg mb-1">Enrollment No: <span className="font-semibold">{enrollment}</span></div>
+            <div className="text-gray-300 text-sm md:text-base mb-4">{(user.tokens || 0).toLocaleString()} Tokens</div>
             <div className="flex items-center justify-between w-full mb-1 mt-2">
-              <span className="text-gray-500 text-sm font-semibold">Success Rate</span>
+              <span className="text-gray-300 text-sm font-semibold">Success Rate</span>
               <span className="bg-[#e2f7e1] text-[#28c76f] text-xs font-bold px-3 py-1 rounded-full">{successRate.toFixed(2)}%</span>
             </div>
             <div className="w-full h-2 rounded-full bg-red-200 relative overflow-hidden mb-2">
@@ -101,11 +101,11 @@ export default function UserProfilePage({ user, onUserGuide, showAnnouncement, s
           </div>
         </div>
 
-        <div className="relative rounded-2xl bg-white/80 border-2 border-white shadow-[0_0_10px_#28c76f11] p-8 w-full overflow-hidden">
-          <div className="flex items-center bg-[#e2f7e1]/40 rounded-full p-1 w-fit mb-6 mx-auto gap-2 shadow-inner">
-            <button onClick={() => setFilter('all')} className={`px-7 py-2 rounded-full font-semibold text-base ${filter==='all'?'bg-[#28c76f] text-white':'bg-transparent text-[#28c76f]'}`}>All</button>
-            <button onClick={() => setFilter('active')} className={`px-7 py-2 rounded-full font-semibold text-base ${filter==='active'?'bg-[#28c76f] text-white':'bg-transparent text-[#28c76f]'}`}>Active</button>
-            <button onClick={() => setFilter('expired')} className={`px-7 py-2 rounded-full font-semibold text-base ${filter==='expired'?'bg-[#28c76f] text-white':'bg-transparent text-[#28c76f]'}`}>Expired</button>
+        <div className="relative rounded-2xl bg-[#181f1f] border-2 border-[#28c76f]/20 shadow-[0_0_20px_rgba(40,199,111,0.1)] p-8 w-full overflow-hidden">
+          <div className="flex items-center bg-[#2d3235] rounded-full p-1 w-fit mb-6 mx-auto gap-2">
+            <button onClick={() => setFilter('all')} className={`px-7 py-2 rounded-full font-semibold text-base transition-all duration-200 focus:outline-none ${filter==='all'?'bg-[#28c76f] text-white shadow-md':'bg-transparent text-gray-300 hover:bg-[#2d3235] hover:text-white'}`}>All</button>
+            <button onClick={() => setFilter('active')} className={`px-7 py-2 rounded-full font-semibold text-base transition-all duration-200 focus:outline-none ${filter==='active'?'bg-[#28c76f] text-white shadow-md':'bg-transparent text-gray-300 hover:bg-[#2d3235] hover:text-white'}`}>Active</button>
+            <button onClick={() => setFilter('expired')} className={`px-7 py-2 rounded-full font-semibold text-base transition-all duration-200 focus:outline-none ${filter==='expired'?'bg-[#28c76f] text-white shadow-md':'bg-transparent text-gray-300 hover:bg-[#2d3235] hover:text-white'}`}>Expired</button>
           </div>
           {loading ? (
             <div className="text-center text-gray-400 py-12 text-lg font-semibold">Loading...</div>
@@ -115,33 +115,33 @@ export default function UserProfilePage({ user, onUserGuide, showAnnouncement, s
             <div className="text-center text-gray-400 py-12 text-lg font-semibold">Nothing to show</div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full text-left text-gray-900">
+              <table className="min-w-full text-left text-white">
                 <thead>
-                  <tr className="border-b-2 border-white">
-                    <th className="py-2 px-6 text-[#28c76f] font-semibold">Company</th>
-                    <th className="py-2 px-6 text-[#28c76f] font-semibold">Candidate</th>
-                    <th className="py-2 px-6 text-[#28c76f] font-semibold">Type</th>
-                    <th className="py-2 px-6 text-[#28c76f] font-semibold">Amount</th>
-                    <th className="py-2 px-6 text-[#28c76f] font-semibold">Stake</th>
-                    <th className="py-2 px-6 text-[#28c76f] font-semibold">Status</th>
+                  <tr className="border-b border-[#28c76f]/20">
+                    <th className="py-3 px-6 text-[#28c76f] font-semibold">Company</th>
+                    <th className="py-3 px-6 text-[#28c76f] font-semibold">Candidate</th>
+                    <th className="py-3 px-6 text-[#28c76f] font-semibold">Type</th>
+                    <th className="py-3 px-6 text-[#28c76f] font-semibold">Amount</th>
+                    <th className="py-3 px-6 text-[#28c76f] font-semibold">Stake</th>
+                    <th className="py-3 px-6 text-[#28c76f] font-semibold">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredBets.map((bet, idx) => (
-                    <tr key={idx} className="border-b-2 border-white">
-                      <td className="py-2 px-6">{bet.companyEvent?.companyName || '—'}</td>
-                      <td className="py-2 px-6">{bet.candidate?.name || '—'}</td>
-                      <td className="py-2 px-6">
+                    <tr key={idx} className="border-b border-[#28c76f]/10 hover:bg-[#2d3235]">
+                      <td className="py-3 px-6 text-white">{bet.companyEvent?.companyName || '—'}</td>
+                      <td className="py-3 px-6 text-white">{bet.candidate?.name || '—'}</td>
+                      <td className="py-3 px-6">
                         {bet.type === 'for' ? (
                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-thumbs-up w-4 h-4 sm:w-5 sm:h-5 text-blue-500"><path d="M7 10v12"></path><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"></path></svg>
                         ) : (
                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-thumbs-down w-4 h-4 sm:w-5 sm:h-5 text-red-500"><path d="M17 14V2"></path><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"></path></svg>
                         )}
                       </td>
-                      <td className="py-2 px-6">{bet.amount}</td>
-                      <td className="py-2 px-6">{bet.stake}</td>
-                      <td className="py-2 px-6">
-                        <span className={`px-2 py-1 rounded text-xs ${bet.status==='active' ? 'bg-green-100 text-green-700' : bet.status==='won' ? 'bg-blue-100 text-blue-700' : bet.status==='lost' ? 'bg-red-100 text-red-700' : 'bg-gray-200 text-gray-900'}`}>{bet.status ? bet.status[0].toUpperCase()+bet.status.slice(1) : '—'}</span>
+                      <td className="py-3 px-6 text-white">{bet.amount}</td>
+                      <td className="py-3 px-6 text-white">{bet.stake}</td>
+                      <td className="py-3 px-6">
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${bet.status==='active' ? 'bg-[#28c76f] text-white' : bet.status==='won' ? 'bg-blue-600 text-white' : bet.status==='lost' ? 'bg-red-600 text-white' : 'bg-gray-600 text-gray-200'}`}>{bet.status ? bet.status[0].toUpperCase()+bet.status.slice(1) : '—'}</span>
                       </td>
                     </tr>) )}
                 </tbody>

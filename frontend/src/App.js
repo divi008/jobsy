@@ -1045,8 +1045,12 @@ function AppWithRouterAnnouncementBar(props) {
       )}
       {props.showUserGuideModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full relative overflow-y-auto max-h-[90vh]">
-            <button className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl" onClick={() => props.setShowUserGuideModal(false)}>&times;</button>
+          <div className="rounded-2xl shadow-2xl p-8 max-w-2xl w-full relative overflow-y-auto max-h-[90vh]" style={{
+            background: 'linear-gradient(135deg, #0a2a20 0%, #000000 100%)',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(40,199,111,0.2), inset 0 1px 0 rgba(40,199,111,0.1)',
+            border: '1px solid rgba(40,199,111,0.3)'
+          }}>
+            <button className="absolute top-4 right-4 text-gray-300 hover:text-white text-2xl" onClick={() => props.setShowUserGuideModal(false)}>&times;</button>
             {props.userGuideContent}
             <button className="mt-8 w-full bg-[#28c76f] hover:bg-[#22b36a] text-white font-bold py-3 rounded-full text-lg transition hover:shadow-md" onClick={() => props.setShowUserGuideModal(false)}>Get Started</button>
           </div>
