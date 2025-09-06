@@ -81,11 +81,11 @@ export default function CompanyShortlistModal({ open, user,onClose, company,acti
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div
-        className="shadow-2xl w-full max-w-4xl p-10 relative max-h-[80vh] overflow-y-auto border-[3px] border-white flex flex-col"
+        className="shadow-2xl w-full max-w-4xl p-10 relative max-h-[80vh] overflow-y-auto border-[3px] border-gray-600 flex flex-col"
         style={{
           borderRadius: 0,
-          background: 'radial-gradient(circle at 60% 40%, rgba(40,199,111,0.10) 0%, rgba(35,43,43,1) 80%)',
-          backgroundColor: '#232b2b',
+          background: 'radial-gradient(circle at 60% 40%, rgba(40,199,111,0.05) 0%, rgba(0,0,0,1) 80%)',
+          backgroundColor: '#000000',
         }}
       >
         <button className="absolute top-4 right-4 text-gray-400 text-2xl font-bold hover:text-gray-200" onClick={onClose}>&times;</button>
@@ -98,8 +98,8 @@ export default function CompanyShortlistModal({ open, user,onClose, company,acti
           >
             {company.companyName} - {company.jobProfile}
           </motion.h2>
-          <div className="flex items-center gap-2 bg-[#232b2b] px-4 py-2 rounded-full font-semibold text-lg" style={{ color: '#28c76f', border: '2px solid #28c76f' }}>
-            Total: <span>{totalBet}</span>
+          <div className="flex items-center gap-2 bg-black px-4 py-2 rounded-full font-semibold text-lg" style={{ color: '#90EE90', border: '2px solid #90EE90' }}>
+            Total: <span style={{ fontFamily: 'monospace', fontWeight: 'bold' }}>{totalBet}</span>
           </div>
         </div>
         {/* Scrollable table container */}

@@ -45,18 +45,30 @@ export default function HeaderNav({ user, onUserGuide }) {
   return (
     <>
       {/* Header */}
-      <header className="flex items-center justify-between px-4 md:px-10 py-4 md:py-6 bg-white/80 border-b border-[#e5f9ec] text-gray-900 relative shadow-sm">
+      <header className="flex items-center justify-between px-4 md:px-10 py-4 md:py-6 relative shadow-sm" style={{ 
+        background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%)',
+        borderBottom: '1px solid #333',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)'
+      }}>
         <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/home')}>
           <img src="/pngkey.com-poker-chips-png-594513.png" alt="Jobsy Logo" className="w-8 h-8 md:w-10 md:h-10" />
           <span className="text-2xl md:text-3xl font-bold text-[#28c76f]">Jobsy</span>
         </div>
         {/* Desktop user menu */}
         <div className="hidden md:flex items-center gap-6 relative">
-          <div className="flex items-center gap-2 bg-[#093820] px-4 py-2 rounded-full">
-            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="text-[#28c76f]">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full" style={{ 
+            background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
+            border: '2px solid #90EE90',
+            boxShadow: '0 2px 10px rgba(144,238,144,0.3)'
+          }}>
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: '#90EE90' }}>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3-1.343-3-3-3zm0 10c-4.418 0-8-1.79-8-4V6c0-2.21 3.582-4 8-4s8 1.79 8 4v8c0 2.21-3.582 4-8 4z" />
             </svg>
-            <span className="font-semibold text-lg text-gray-900">{user?.tokens.toLocaleString()}</span>
+            <span className="font-bold text-lg" style={{ 
+              color: '#90EE90', 
+              fontFamily: 'monospace',
+              textShadow: '0 0 10px rgba(144,238,144,0.5)'
+            }}>{user?.tokens.toLocaleString()}</span>
           </div>
           <div className="relative" ref={menuRef}>
             <button onClick={() => setMenuOpen(!menuOpen)} className="w-10 h-10 bg-[#28c76f] rounded-full flex items-center justify-center font-bold text-lg text-white focus:outline-none focus:ring-2 focus:ring-[#28c76f]">
