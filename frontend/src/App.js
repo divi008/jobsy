@@ -432,7 +432,10 @@ function LandingPage({ loadUser }) {
       )}
       {/* Removed duplicate OTP-only modal to avoid confusion */}
       {/* Main Content (always rendered) */}
-      <div className="min-h-screen w-full flex items-center justify-center">
+      <div className="min-h-screen w-full flex items-center justify-center" style={{
+        background: 'radial-gradient(circle at center, #0d4f3c 0%, #0a3d2e 25%, #062e22 50%, #000000 100%)',
+        backgroundAttachment: 'fixed'
+      }}>
         <motion.div
           className="relative z-10 flex flex-col md:flex-row gap-16 w-full max-w-7xl px-6 items-start"
           initial="hidden"
@@ -448,23 +451,30 @@ function LandingPage({ loadUser }) {
               hidden: { opacity: 0, y: 40 },
               visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
             }}
-            className={`flex-1 max-w-full md:max-w-[48%] bg-white rounded-2xl shadow-[0_10px_25px_rgba(0,0,0,0.05)] px-12 py-10 flex flex-col justify-center overflow-auto transition-all duration-500 ${
+            className={`flex-1 max-w-full md:max-w-[48%] px-12 py-10 flex flex-col justify-center overflow-auto transition-all duration-500 ${
               activeTab === "signup" ? "min-h-[650px]" : "min-h-[400px]"
-            } hover:shadow-[0_0_24px_4px_rgba(34,197,94,0.15)]`}
+            }`}
+            style={{
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%)',
+              borderRadius: '20px',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1), inset 0 1px 0 rgba(255,255,255,0.6)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255,255,255,0.2)'
+            }}
           >
             {/* Logo and Heading */}
             <div className="flex items-center justify-center mb-6 gap-4">
               <img src="pngkey.com-poker-chips-png-594513.png" alt="Jobsy Logo" className="w-16 h-16 rounded-full shadow-lg" />
               <h1 className="text-4xl font-bold text-green-600 drop-shadow-lg">Jobsy</h1>
             </div>
-            <p className="text-center text-gray-700 mt-2 text-lg font-medium break-words">
+            <p className="text-center mt-2 text-lg font-medium break-words" style={{ color: '#2d5a4a' }}>
               Placement Data that Works for You | Real-Time Insights, Smart Predictions!
             </p>
             {/* Tabs */}
             <div className="flex justify-center mb-4 gap-6 mt-6">
               <button
                 className={`font-semibold px-6 pb-1 text-lg border-b-2 transition-colors duration-200 ${
-                  activeTab === "login" ? "text-green-600 border-green-600" : "text-gray-700 border-transparent"
+                  activeTab === "login" ? "text-green-600 border-green-600" : "text-gray-600 border-transparent"
                 }`}
                 onClick={() => setActiveTab("login")}
               >
@@ -472,7 +482,7 @@ function LandingPage({ loadUser }) {
               </button>
               <button
                 className={`font-semibold px-6 pb-1 text-lg border-b-2 transition-colors duration-200 ${
-                  activeTab === "signup" ? "text-green-600 border-green-600" : "text-gray-700 border-transparent"
+                  activeTab === "signup" ? "text-green-600 border-green-600" : "text-gray-600 border-transparent"
                 }`}
                 onClick={() => setActiveTab("signup")}
               >
@@ -484,7 +494,7 @@ function LandingPage({ loadUser }) {
   {activeTab === "signup" && (
     <>
       <div>
-        <label className="block text-base text-slate-400 mb-2">Full Name</label>
+        <label className="block text-base mb-2" style={{ color: '#4a5d5a' }}>Full Name</label>
         <input
           type="text"
           className="w-full px-5 py-3 rounded-md bg-slate-100 border border-slate-300 shadow-sm focus:ring-2 focus:ring-green-400 focus:outline-none text-slate-900 text-base transition-all duration-200"
@@ -496,7 +506,7 @@ function LandingPage({ loadUser }) {
         />
       </div>
       <div>
-        <label className="block text-base text-slate-400 mb-2">Enrollment Number</label>
+        <label className="block text-base mb-2" style={{ color: '#4a5d5a' }}>Enrollment Number</label>
         <input
           type="text"
           className="w-full px-5 py-3 rounded-md bg-slate-100 border border-slate-300 shadow-sm focus:ring-2 focus:ring-green-400 focus:outline-none text-slate-900 text-base transition-all duration-200"
@@ -510,7 +520,7 @@ function LandingPage({ loadUser }) {
     </>
   )}
   <div>
-    <label className="block text-base text-slate-400 mb-2">Email</label>
+    <label className="block text-base mb-2" style={{ color: '#4a5d5a' }}>Email</label>
     <div className="flex gap-2">
       <input
         type="email"
@@ -541,7 +551,7 @@ function LandingPage({ loadUser }) {
     )}
   </div>
   <div>
-    <label className="block text-base text-slate-400 mb-2">Password</label>
+    <label className="block text-base mb-2" style={{ color: '#4a5d5a' }}>Password</label>
     <input
       type="password"
       className="w-full px-5 py-3 rounded-md bg-slate-100 border border-slate-300 shadow-sm focus:ring-2 focus:ring-green-400 focus:outline-none text-slate-900 text-base transition-all duration-200"
@@ -555,7 +565,7 @@ function LandingPage({ loadUser }) {
   </div>
   {activeTab === "signup" && (
     <div>
-      <label className="block text-base text-slate-400 mb-2">Confirm Password</label>
+      <label className="block text-base mb-2" style={{ color: '#4a5d5a' }}>Confirm Password</label>
       <input
         type="password"
         className="w-full px-5 py-3 rounded-md bg-slate-100 border border-slate-300 shadow-sm focus:ring-2 focus:ring-green-400 focus:outline-none text-slate-900 text-base transition-all duration-200"
@@ -579,7 +589,7 @@ function LandingPage({ loadUser }) {
             <div className="flex justify-end mt-3">
               <a
                 href="#"
-                className="text-green-600 text-base hover:underline"
+                className="text-green-600 text-base hover:underline font-medium"
                 onClick={e => { e.preventDefault(); setShowResetModal(true); }}
               >
                 Forgot Password?
@@ -592,10 +602,17 @@ function LandingPage({ loadUser }) {
               hidden: { opacity: 0, y: 40 },
               visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
             }}
-            className="flex-1 max-w-full md:max-w-[48%] bg-white rounded-2xl shadow-[0_10px_25px_rgba(0,0,0,0.05)] px-12 py-10 flex flex-col justify-center overflow-auto transition-all duration-300 hover:shadow-[0_0_24px_4px_rgba(34,197,94,0.15)] h-[600px]"
+            className="flex-1 max-w-full md:max-w-[48%] px-12 py-10 flex flex-col justify-center overflow-auto transition-all duration-300 h-[600px]"
+            style={{
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%)',
+              borderRadius: '20px',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1), inset 0 1px 0 rgba(255,255,255,0.6)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255,255,255,0.2)'
+            }}
           >
             <h2 className="text-4xl font-bold text-green-600 mb-6 drop-shadow-lg">How It Works ?</h2>
-            <ol className="space-y-5 text-slate-500 text-base break-words">
+            <ol className="space-y-5 text-base break-words" style={{ color: '#4a5d5a' }}>
               <li className="flex items-start">
                 <span className="bg-gradient-to-tr from-green-500 to-green-600 text-white font-bold rounded-full w-12 h-12 flex items-center justify-center mr-6 text-2xl shadow-lg">1</span>
                 <span>
