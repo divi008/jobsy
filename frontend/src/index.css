@@ -20,3 +20,7 @@ body,
 .swiper-pagination-bullet-active {
   background: #28c76f !important;
 }
+
+.bet-amount-input::placeholder {
+  color: #90EE90 !important;
+}

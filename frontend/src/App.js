@@ -241,9 +241,13 @@ function LandingPage({ loadUser }) {
       {/* Welcome Modal */}
       {showWelcomeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl p-8 shadow-lg w-full max-w-2xl transition-all duration-300 transform scale-95 hover:scale-100 relative max-h-[90vh] overflow-y-auto">
+          <div className="rounded-2xl p-8 shadow-lg w-full max-w-2xl transition-all duration-300 transform scale-95 hover:scale-100 relative max-h-[90vh] overflow-y-auto" style={{
+            background: 'linear-gradient(135deg, #0a2a20 0%, #000000 100%)',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(40,199,111,0.2), inset 0 1px 0 rgba(40,199,111,0.1)',
+            border: '1px solid rgba(40,199,111,0.3)'
+          }}>
             <button
-              className="absolute top-4 right-4 text-gray-400 text-2xl font-bold hover:text-gray-700"
+              className="absolute top-4 right-4 text-gray-300 text-2xl font-bold hover:text-white"
               onClick={() => setShowWelcomeModal(false)}
               aria-label="Close"
             >
@@ -253,14 +257,14 @@ function LandingPage({ loadUser }) {
               Welcome to<span className="text-green-600"> Jobsy</span> <span role="img" aria-label="target">🎯</span>
             </h2>
             <div className="overflow-y-auto max-h-[60vh] pr-2 custom-scrollbar">
-              <div className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <div className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: '#90EE90' }}>
                 <span>Quick Navigation</span>
-                <span className="text-base text-gray-500 font-normal">(Available in navbar/hamburger menu)</span>
+                <span className="text-base font-normal" style={{ color: '#90EE90' }}>(Available in navbar/hamburger menu)</span>
               </div>
-              <ul className="text-slate-700 text-base space-y-4 mb-8">
+              <ul className="text-base space-y-4 mb-8" style={{ color: '#90EE90' }}>
                 <li>
                   <span className="font-bold text-pink-500">📋 See Shortlists</span>
-                  <ul className="list-disc ml-6 text-slate-600">
+                  <ul className="list-disc ml-6" style={{ color: '#90EE90' }}>
                     <li>View all shortlists across active companies</li>
                     <li>Filter candidates by branch</li>
                     <li>Quick search via enrollment number or name</li>
@@ -269,7 +273,7 @@ function LandingPage({ loadUser }) {
                 </li>
                 <li>
                   <span className="font-bold text-green-500">📈 Predict & Win</span>
-                  <ul className="list-disc ml-6 text-slate-600">
+                  <ul className="list-disc ml-6" style={{ color: '#90EE90' }}>
                     <li>Start with 100000 welcome tokens</li>
                     <li>Place strategic bets on placement outcomes - bet "For" or "Against"</li>
                     <li>Watch stake multipliers update in real-time based on community betting</li>
@@ -283,7 +287,7 @@ function LandingPage({ loadUser }) {
                     <span className="text-green-400 text-2xl">🎯</span>
                     <span className="text-xl font-bold text-green-400">How It Works</span>
                   </div>
-                  <ul className="list-disc ml-8 text-slate-700 space-y-1">
+                  <ul className="list-disc ml-8 space-y-1" style={{ color: '#90EE90' }}>
                     <li><span className="font-bold">Connect & Start:</span> Sign up with your IIT BHU email and get 100000 tokens instantly</li>
                     <li><span className="font-bold">Choose & Bet:</span> Browse active drives and place strategic bets with dynamic stake multipliers</li>
                     <li><span className="font-bold">Track & Win:</span> Monitor results live, collect winnings, and climb the leaderboard</li>
@@ -294,7 +298,7 @@ function LandingPage({ loadUser }) {
                     <span className="text-green-400 text-2xl">🔍</span>
                     <span className="text-xl font-bold text-green-400">Pro Tips</span>
                   </div>
-                  <ul className="list-disc ml-8 text-slate-700 space-y-1">
+                  <ul className="list-disc ml-8 space-y-1" style={{ color: '#90EE90' }}>
                     <li>Keep an eye on multipliers - they update automatically based on betting patterns</li>
                     <li>Higher multipliers = bigger potential returns</li>
                   </ul>
@@ -455,11 +459,11 @@ function LandingPage({ loadUser }) {
               activeTab === "signup" ? "min-h-[650px]" : "min-h-[400px]"
             }`}
             style={{
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%)',
+              background: 'linear-gradient(135deg, #0a2a20 0%, #000000 100%)',
               borderRadius: '20px',
-              boxShadow: '0 20px 40px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1), inset 0 1px 0 rgba(255,255,255,0.6)',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(40,199,111,0.2), inset 0 1px 0 rgba(40,199,111,0.1)',
               backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255,255,255,0.2)'
+              border: '1px solid rgba(40,199,111,0.3)'
             }}
           >
             {/* Logo and Heading */}
@@ -467,14 +471,14 @@ function LandingPage({ loadUser }) {
               <img src="pngkey.com-poker-chips-png-594513.png" alt="Jobsy Logo" className="w-16 h-16 rounded-full shadow-lg" />
               <h1 className="text-4xl font-bold text-green-600 drop-shadow-lg">Jobsy</h1>
             </div>
-            <p className="text-center mt-2 text-lg font-medium break-words" style={{ color: '#2d5a4a' }}>
+            <p className="text-center mt-2 text-lg font-medium break-words" style={{ color: '#90EE90' }}>
               Placement Data that Works for You | Real-Time Insights, Smart Predictions!
             </p>
             {/* Tabs */}
             <div className="flex justify-center mb-4 gap-6 mt-6">
               <button
                 className={`font-semibold px-6 pb-1 text-lg border-b-2 transition-colors duration-200 ${
-                  activeTab === "login" ? "text-green-600 border-green-600" : "text-gray-600 border-transparent"
+                  activeTab === "login" ? "text-green-400 border-green-400" : "text-gray-300 border-transparent"
                 }`}
                 onClick={() => setActiveTab("login")}
               >
@@ -482,7 +486,7 @@ function LandingPage({ loadUser }) {
               </button>
               <button
                 className={`font-semibold px-6 pb-1 text-lg border-b-2 transition-colors duration-200 ${
-                  activeTab === "signup" ? "text-green-600 border-green-600" : "text-gray-600 border-transparent"
+                  activeTab === "signup" ? "text-green-400 border-green-400" : "text-gray-300 border-transparent"
                 }`}
                 onClick={() => setActiveTab("signup")}
               >
@@ -494,7 +498,7 @@ function LandingPage({ loadUser }) {
   {activeTab === "signup" && (
     <>
       <div>
-        <label className="block text-base mb-2" style={{ color: '#4a5d5a' }}>Full Name</label>
+        <label className="block text-base mb-2" style={{ color: '#90EE90' }}>Full Name</label>
         <input
           type="text"
           className="w-full px-5 py-3 rounded-md bg-slate-100 border border-slate-300 shadow-sm focus:ring-2 focus:ring-green-400 focus:outline-none text-slate-900 text-base transition-all duration-200"
@@ -506,7 +510,7 @@ function LandingPage({ loadUser }) {
         />
       </div>
       <div>
-        <label className="block text-base mb-2" style={{ color: '#4a5d5a' }}>Enrollment Number</label>
+        <label className="block text-base mb-2" style={{ color: '#90EE90' }}>Enrollment Number</label>
         <input
           type="text"
           className="w-full px-5 py-3 rounded-md bg-slate-100 border border-slate-300 shadow-sm focus:ring-2 focus:ring-green-400 focus:outline-none text-slate-900 text-base transition-all duration-200"
@@ -520,7 +524,7 @@ function LandingPage({ loadUser }) {
     </>
   )}
   <div>
-    <label className="block text-base mb-2" style={{ color: '#4a5d5a' }}>Email</label>
+    <label className="block text-base mb-2" style={{ color: '#90EE90' }}>Email</label>
     <div className="flex gap-2">
       <input
         type="email"
@@ -551,7 +555,7 @@ function LandingPage({ loadUser }) {
     )}
   </div>
   <div>
-    <label className="block text-base mb-2" style={{ color: '#4a5d5a' }}>Password</label>
+    <label className="block text-base mb-2" style={{ color: '#90EE90' }}>Password</label>
     <input
       type="password"
       className="w-full px-5 py-3 rounded-md bg-slate-100 border border-slate-300 shadow-sm focus:ring-2 focus:ring-green-400 focus:outline-none text-slate-900 text-base transition-all duration-200"
@@ -565,7 +569,7 @@ function LandingPage({ loadUser }) {
   </div>
   {activeTab === "signup" && (
     <div>
-      <label className="block text-base mb-2" style={{ color: '#4a5d5a' }}>Confirm Password</label>
+      <label className="block text-base mb-2" style={{ color: '#90EE90' }}>Confirm Password</label>
       <input
         type="password"
         className="w-full px-5 py-3 rounded-md bg-slate-100 border border-slate-300 shadow-sm focus:ring-2 focus:ring-green-400 focus:outline-none text-slate-900 text-base transition-all duration-200"
@@ -604,15 +608,15 @@ function LandingPage({ loadUser }) {
             }}
             className="flex-1 max-w-full md:max-w-[48%] px-12 py-10 flex flex-col justify-center overflow-auto transition-all duration-300 h-[600px]"
             style={{
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%)',
+              background: 'linear-gradient(135deg, #0a2a20 0%, #000000 100%)',
               borderRadius: '20px',
-              boxShadow: '0 20px 40px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1), inset 0 1px 0 rgba(255,255,255,0.6)',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(40,199,111,0.2), inset 0 1px 0 rgba(40,199,111,0.1)',
               backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255,255,255,0.2)'
+              border: '1px solid rgba(40,199,111,0.3)'
             }}
           >
             <h2 className="text-4xl font-bold text-green-600 mb-6 drop-shadow-lg">How It Works ?</h2>
-            <ol className="space-y-5 text-base break-words" style={{ color: '#4a5d5a' }}>
+            <ol className="space-y-5 text-base break-words" style={{ color: '#90EE90' }}>
               <li className="flex items-start">
                 <span className="bg-gradient-to-tr from-green-500 to-green-600 text-white font-bold rounded-full w-12 h-12 flex items-center justify-center mr-6 text-2xl shadow-lg">1</span>
                 <span>

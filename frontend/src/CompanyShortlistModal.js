@@ -160,7 +160,12 @@ export default function CompanyShortlistModal({ open, user,onClose, company,acti
                     <input
                       type="number"
                       min="0"
-                      className="w-20 px-2 py-1 rounded bg-white text-[#181f1f] border border-[#28c76f] focus:outline-none"
+                      className="w-20 px-2 py-1 rounded border focus:outline-none bet-amount-input"
+                      style={{
+                        backgroundColor: '#000000',
+                        color: '#90EE90',
+                        borderColor: '#90EE90'
+                      }}
                       value={betSelections[cand._id]?.amount || ''}
                       onChange={e => handleAmount(cand._id, e.target.value)}
                       disabled={!betSelections[cand._id]?.type}
