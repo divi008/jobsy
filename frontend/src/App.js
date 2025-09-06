@@ -80,9 +80,9 @@ function LandingPage({ loadUser }) {
         setIsEmailVerified(false);
       } else {
         // Login successful
-        localStorage.setItem('token', res.data.token);
+      localStorage.setItem('token', res.data.token);
         await loadUser();
-        setShowWelcomeModal(true);
+      setShowWelcomeModal(true);
       }
     } catch (err) {
       console.error(err.response ? err.response.data : err.message);
@@ -328,25 +328,25 @@ function LandingPage({ loadUser }) {
             <h2 className="text-3xl font-bold text-green-600 mb-6">Reset Password</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-base text-gray-700 mb-2">Email</label>
-                <div className="flex gap-2">
-                  <input
-                    type="email"
-                    className="flex-1 px-4 py-2 rounded bg-slate-100 text-gray-900 border border-slate-300 focus:ring-2 focus:ring-green-400 focus:outline-none"
-                    placeholder="valar.morghulis.got21@itbhu.ac.in"
+            <label className="block text-base text-gray-700 mb-2">Email</label>
+            <div className="flex gap-2">
+              <input
+                type="email"
+                className="flex-1 px-4 py-2 rounded bg-slate-100 text-gray-900 border border-slate-300 focus:ring-2 focus:ring-green-400 focus:outline-none"
+                placeholder="valar.morghulis.got21@itbhu.ac.in"
                     value={resetEmail}
                     onChange={(e) => setResetEmail(e.target.value)}
                     required
-                  />
-                  <button
-                    className="bg-green-500 hover:bg-green-600 text-white font-semibold px-6 rounded transition"
+              />
+              <button
+                className="bg-green-500 hover:bg-green-600 text-white font-semibold px-6 rounded transition"
                     onClick={handleSendResetOtp}
                     disabled={isLoading}
-                  >
+              >
                     {isLoading ? 'Sending...' : 'Send OTP'}
-                  </button>
-                </div>
-              </div>
+              </button>
+            </div>
+          </div>
               {showOtpModal && (
                 <>
                   <div>
@@ -361,7 +361,7 @@ function LandingPage({ loadUser }) {
                       minLength="6"
                       maxLength="6"
                     />
-                  </div>
+        </div>
                   <div>
                     <label className="block text-base text-gray-700 mb-2">New Password</label>
                     <input
@@ -471,7 +471,7 @@ function LandingPage({ loadUser }) {
               <img src="pngkey.com-poker-chips-png-594513.png" alt="Jobsy Logo" className="w-16 h-16 rounded-full shadow-lg" />
               <h1 className="text-4xl font-bold text-green-600 drop-shadow-lg">Jobsy</h1>
             </div>
-            <p className="text-center mt-2 text-lg font-medium break-words" style={{ color: '#90EE90' }}>
+            <p className="text-center mt-2 text-lg font-medium break-words text-white">
               Placement Data that Works for You | Real-Time Insights, Smart Predictions!
             </p>
             {/* Tabs */}
@@ -498,7 +498,7 @@ function LandingPage({ loadUser }) {
   {activeTab === "signup" && (
     <>
       <div>
-        <label className="block text-base mb-2" style={{ color: '#90EE90' }}>Full Name</label>
+        <label className="block text-base mb-2 text-white">Full Name</label>
         <input
           type="text"
           className="w-full px-5 py-3 rounded-md border shadow-sm focus:ring-2 focus:ring-green-400 focus:outline-none text-base transition-all duration-200 login-input"
@@ -515,7 +515,7 @@ function LandingPage({ loadUser }) {
         />
       </div>
       <div>
-        <label className="block text-base mb-2" style={{ color: '#90EE90' }}>Enrollment Number</label>
+        <label className="block text-base mb-2 text-white">Enrollment Number</label>
         <input
           type="text"
           className="w-full px-5 py-3 rounded-md border shadow-sm focus:ring-2 focus:ring-green-400 focus:outline-none text-base transition-all duration-200 login-input"
@@ -534,7 +534,7 @@ function LandingPage({ loadUser }) {
     </>
   )}
   <div>
-    <label className="block text-base mb-2" style={{ color: '#90EE90' }}>Email</label>
+    <label className="block text-base mb-2 text-white">Email</label>
     <div className="flex gap-2">
       <input
         type="email"
@@ -570,7 +570,7 @@ function LandingPage({ loadUser }) {
     )}
   </div>
   <div>
-    <label className="block text-base mb-2" style={{ color: '#90EE90' }}>Password</label>
+    <label className="block text-base mb-2 text-white">Password</label>
     <input
       type="password"
       className="w-full px-5 py-3 rounded-md border shadow-sm focus:ring-2 focus:ring-green-400 focus:outline-none text-base transition-all duration-200 login-input"
@@ -589,7 +589,7 @@ function LandingPage({ loadUser }) {
   </div>
   {activeTab === "signup" && (
     <div>
-      <label className="block text-base mb-2" style={{ color: '#90EE90' }}>Confirm Password</label>
+      <label className="block text-base mb-2 text-white">Confirm Password</label>
       <input
         type="password"
         className="w-full px-5 py-3 rounded-md border shadow-sm focus:ring-2 focus:ring-green-400 focus:outline-none text-base transition-all duration-200 login-input"
@@ -641,7 +641,7 @@ function LandingPage({ loadUser }) {
             }}
           >
             <h2 className="text-4xl font-bold text-green-600 mb-6 drop-shadow-lg">How It Works ?</h2>
-            <ol className="space-y-5 text-base break-words" style={{ color: '#90EE90' }}>
+            <ol className="space-y-5 text-base break-words text-white">
               <li className="flex items-start">
                 <span className="bg-gradient-to-tr from-green-500 to-green-600 text-white font-bold rounded-full w-12 h-12 flex items-center justify-center mr-6 text-2xl shadow-lg">1</span>
                 <span>
@@ -1007,12 +1007,12 @@ export default function App() {
         setShowUserGuideModal={setShowUserGuideModal}
         userGuideContent={userGuideContent}
       >
-        <Routes>
-          <Route path="/" element={<LandingPage loadUser={loadUser} />} />
-          {/* Pass setUser to HomePage and other pages as needed */}
+      <Routes>
+        <Route path="/" element={<LandingPage loadUser={loadUser} />} />
+        {/* Pass setUser to HomePage and other pages as needed */}
           <Route path="/home" element={<HomePage user={user} setUser={setUser} showUserGuideModal={showUserGuideModal} setShowUserGuideModal={setShowUserGuideModal} userGuideContent={userGuideContent} />} />
           <Route path="/profile" element={<UserProfilePage user={user} onUserGuide={() => setShowUserGuideModal(true)} />} />
-          <Route path="/profile/:userId" element={<UserProfileWrapper {...pageProps} />} />
+        <Route path="/profile/:userId" element={<UserProfileWrapper {...pageProps} />} />
           <Route path="/my-bets" element={<MyBets {...pageProps} userGuideContent={userGuideContent} />} />
           <Route path="/active-bets" element={<ActiveBets {...pageProps} setUser={setUser} userGuideContent={userGuideContent} />} />
           <Route path="/shortlists" element={<Shortlists {...pageProps} userGuideContent={userGuideContent} />} />
@@ -1020,7 +1020,7 @@ export default function App() {
           <Route path="/leaderboard" element={<Leaderboard {...pageProps} userGuideContent={userGuideContent} />} />
           <Route path="/admin-panel" element={<AdminPanel {...pageProps} userGuideContent={userGuideContent} />} />
           <Route path="/placement-data" element={<PlacementData {...pageProps} userGuideContent={userGuideContent} />} />
-        </Routes>
+      </Routes>
       </AppWithRouterAnnouncementBar>
     </BrowserRouter>
   );
