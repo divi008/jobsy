@@ -106,6 +106,7 @@ export default function HeaderNav({ user, onUserGuide }) {
       >
         <button className="absolute top-6 right-6 text-3xl text-white" onClick={() => setMobileNavOpen(false)}>&times;</button>
         <a href="/home" className="py-3 text-lg font-semibold hover:text-[#28c76f]" onClick={() => setMobileNavOpen(false)}>Home</a>
+        <a href="/active-bets" className="py-3 text-lg font-semibold hover:text-[#28c76f]" onClick={() => setMobileNavOpen(false)}>Active Bets</a>
         <a href="/my-bets" className="py-3 text-lg font-semibold hover:text-[#28c76f]" onClick={() => setMobileNavOpen(false)}>My Bets</a>
         <a href="/profile" className="py-3 text-lg font-semibold hover:text-[#28c76f]" onClick={() => setMobileNavOpen(false)}>Profile</a>
         <a href="/leaderboard" className="py-3 text-lg font-semibold hover:text-[#28c76f]" onClick={() => setMobileNavOpen(false)}>Leaderboard</a>

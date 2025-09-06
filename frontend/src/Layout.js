@@ -29,6 +29,7 @@ export default function Layout({ user, tokens, setTokens, showUserGuideModal, se
       <nav className={`fixed top-0 left-0 z-50 h-full w-64 bg-[#181f1f] text-white flex flex-col pt-20 px-6 shadow-2xl transition-transform duration-300 ${mobileNavOpen ? 'translate-x-0' : '-translate-x-full'} md:hidden`}>
         <button className="absolute top-6 right-6 text-3xl text-white" onClick={() => setMobileNavOpen(false)}>&times;</button>
         <a href="/home" className="py-3 text-lg font-semibold hover:text-[#28c76f]" onClick={() => setMobileNavOpen(false)}>Home</a>
+        <a href="/active-bets" className="py-3 text-lg font-semibold hover:text-[#28c76f]" onClick={() => setMobileNavOpen(false)}>Active Bets</a>
         <a href="/my-bets" className="py-3 text-lg font-semibold hover:text-[#28c76f]" onClick={() => setMobileNavOpen(false)}>My Bets</a>
         <a href="/profile" className="py-3 text-lg font-semibold hover:text-[#28c76f]" onClick={() => setMobileNavOpen(false)}>Profile</a>
         <a href="/leaderboard" className="py-3 text-lg font-semibold hover:text-[#28c76f]" onClick={() => setMobileNavOpen(false)}>Leaderboard</a>
