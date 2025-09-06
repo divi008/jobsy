@@ -24,3 +24,7 @@ body,
 .bet-amount-input::placeholder {
   color: #90EE90 !important;
 }
+
+.login-input::placeholder {
+  color: #90EE90 !important;
+}

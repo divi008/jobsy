@@ -184,13 +184,14 @@ export default function Leaderboard(props) {
         <div className="flex flex-col md:flex-row justify-center items-end gap-8 mb-12 w-full max-w-6xl mx-auto px-2 sm:px-4">
           {/* Silver */}
           <div
-            className="group w-[280px] h-[320px] rounded-2xl p-6 border border-white/30 flex flex-col items-center justify-center relative transition-all duration-300 ease-in-out hover:scale-105 hover:-rotate-2 hover:shadow-2xl"
+            className="group w-[280px] h-[320px] rounded-2xl p-6 border-2 border-white/40 flex flex-col items-center justify-center relative transition-all duration-300 ease-in-out hover:scale-105 hover:-rotate-2 hover:shadow-2xl"
             style={{
-              background: "linear-gradient(to bottom, #f4f4f4 0%, #dcdcdc 30%, #bcbcbc 60%, #a0a0a0 80%, #888888 100%)",
-              boxShadow: "0 4px 32px 0 rgba(200,200,200,0.13), 0 1.5px 8px 0 rgba(255,255,255,0.10)"
+              background: "linear-gradient(145deg, #e8e8e8 0%, #c0c0c0 20%, #a8a8a8 40%, #808080 60%, #696969 80%, #2f2f2f 100%)",
+              boxShadow: "0 8px 32px 0 rgba(0,0,0,0.3), 0 4px 16px 0 rgba(192,192,192,0.4), inset 0 2px 4px rgba(255,255,255,0.3), inset 0 -2px 4px rgba(0,0,0,0.2)",
+              border: "2px solid rgba(255,255,255,0.4)"
             }}
-            onMouseOver={e => e.currentTarget.style.boxShadow = "0 6px 40px 0 rgba(255,255,255,0.18), 0 2px 12px 0 rgba(200,200,200,0.13)"}
-            onMouseOut={e => e.currentTarget.style.boxShadow = "0 4px 32px 0 rgba(200,200,200,0.13), 0 1.5px 8px 0 rgba(255,255,255,0.10)"}
+            onMouseOver={e => e.currentTarget.style.boxShadow = "0 12px 48px 0 rgba(0,0,0,0.4), 0 6px 24px 0 rgba(192,192,192,0.5), inset 0 2px 4px rgba(255,255,255,0.4), inset 0 -2px 4px rgba(0,0,0,0.3)"}
+            onMouseOut={e => e.currentTarget.style.boxShadow = "0 8px 32px 0 rgba(0,0,0,0.3), 0 4px 16px 0 rgba(192,192,192,0.4), inset 0 2px 4px rgba(255,255,255,0.3), inset 0 -2px 4px rgba(0,0,0,0.2)"}
           >
             {/* Only SVG icon remains, emoji removed */}
             <div className="absolute top-4 right-4">
@@ -206,25 +207,26 @@ export default function Leaderboard(props) {
             <div className="w-20 h-20 rounded-full border-2 border-white bg-white/10" style={{boxShadow:'0 0 12px 2px #fff, 0 0 8px 2px #fff8',backdropFilter:'blur(3px)'}}>
               <div className="flex items-center justify-center w-full h-full text-3xl font-bold text-white">{getInitials(podium[1].name)}</div>
             </div>
-            <button className="text-white text-xl font-bold mb-1 hover:underline hover:text-[#28c76f] transition" onClick={() => navigate(`/profile/${podium[1].id}`)}>{podium[1].name}</button>
-            <div className="text-white font-bold text-lg flex items-center gap-2 mb-2">
+            <button className="text-white text-xl font-bold mb-1 hover:underline hover:text-yellow-300 transition drop-shadow-lg" onClick={() => navigate(`/profile/${podium[1].id}`)}>{podium[1].name}</button>
+            <div className="text-white font-bold text-lg flex items-center gap-2 mb-2 drop-shadow-lg">
               <span>🏆</span> {podium[1].tokens.toLocaleString()} Tokens
             </div>
-            <div className="text-sm text-white/80 mb-1">Success Rate</div>
-            <div className="w-full bg-gray-300/40 h-2 rounded-full mb-1 overflow-hidden">
-              <div className="bg-green-400 h-full" style={{ width: `${podium[1].successRate}%` }}></div>
+            <div className="text-sm text-white/90 mb-1 drop-shadow-md">Success Rate</div>
+            <div className="w-full bg-white/30 h-2 rounded-full mb-1 overflow-hidden">
+              <div className="bg-green-500 h-full" style={{ width: `${podium[1].successRate}%` }}></div>
             </div>
-            <div className="text-green-600 font-semibold text-sm">{podium[1].successRate.toFixed(1)}%</div>
+            <div className="text-green-300 font-semibold text-sm drop-shadow-md">{podium[1].successRate.toFixed(1)}%</div>
           </div>
           {/* Gold */}
           <div
-            className="group w-[320px] h-[400px] rounded-2xl p-6 border-2 border-yellow-200 flex flex-col items-center justify-center relative z-10 transition-all duration-300 ease-in-out hover:scale-105 hover:rotate-2 hover:shadow-2xl"
+            className="group w-[320px] h-[400px] rounded-2xl p-6 border-2 border-yellow-300 flex flex-col items-center justify-center relative z-10 transition-all duration-300 ease-in-out hover:scale-105 hover:rotate-2 hover:shadow-2xl"
             style={{
-              background: "linear-gradient(to bottom, #eab308 0%, #eab308 60%, #ffd700 80%, #ffb300 90%, #ffae42 100%)",
-              boxShadow: "0 6px 36px 0 rgba(255,223,0,0.13), 0 2px 12px 0 rgba(255,255,255,0.10)"
+              background: "linear-gradient(145deg, #ffd700 0%, #ffb300 20%, #ff8c00 40%, #ff7f00 60%, #ff6b00 80%, #cc5500 100%)",
+              boxShadow: "0 12px 48px 0 rgba(0,0,0,0.4), 0 6px 24px 0 rgba(255,215,0,0.6), inset 0 3px 6px rgba(255,255,255,0.4), inset 0 -3px 6px rgba(0,0,0,0.3)",
+              border: "2px solid rgba(255,215,0,0.6)"
             }}
-            onMouseOver={e => e.currentTarget.style.boxShadow = "0 8px 48px 0 rgba(255,255,255,0.18), 0 3px 16px 0 rgba(255,223,0,0.13)"}
-            onMouseOut={e => e.currentTarget.style.boxShadow = "0 6px 36px 0 rgba(255,223,0,0.13), 0 2px 12px 0 rgba(255,255,255,0.10)"}
+            onMouseOver={e => e.currentTarget.style.boxShadow = "0 16px 64px 0 rgba(0,0,0,0.5), 0 8px 32px 0 rgba(255,215,0,0.7), inset 0 3px 6px rgba(255,255,255,0.5), inset 0 -3px 6px rgba(0,0,0,0.4)"}
+            onMouseOut={e => e.currentTarget.style.boxShadow = "0 12px 48px 0 rgba(0,0,0,0.4), 0 6px 24px 0 rgba(255,215,0,0.6), inset 0 3px 6px rgba(255,255,255,0.4), inset 0 -3px 6px rgba(0,0,0,0.3)"}
           >
             {/* Replace crown emoji with SVG icon */}
             <div className="absolute top-4 right-4">
@@ -236,25 +238,26 @@ export default function Leaderboard(props) {
             <div className="w-20 h-20 rounded-full border-2 border-white bg-white/10" style={{boxShadow:'0 0 12px 2px #fff, 0 0 8px 2px #fff8',backdropFilter:'blur(3px)'}}>
               <div className="flex items-center justify-center w-full h-full text-3xl font-bold text-white">{getInitials(podium[0].name)}</div>
             </div>
-            <button className="text-white text-xl font-bold mb-1 hover:underline hover:text-[#28c76f] transition" onClick={() => navigate(`/profile/${podium[0].id}`)}>{podium[0].name}</button>
-            <div className="text-white font-bold text-lg flex items-center gap-2 mb-2">
+            <button className="text-white text-xl font-bold mb-1 hover:underline hover:text-yellow-200 transition drop-shadow-lg" onClick={() => navigate(`/profile/${podium[0].id}`)}>{podium[0].name}</button>
+            <div className="text-white font-bold text-lg flex items-center gap-2 mb-2 drop-shadow-lg">
               <span>🏆</span> {podium[0].tokens.toLocaleString()} Tokens
             </div>
-            <div className="text-sm text-white/80 mb-1">Success Rate</div>
-            <div className="w-full bg-yellow-200/40 h-2 rounded-full mb-1 overflow-hidden">
+            <div className="text-sm text-white/90 mb-1 drop-shadow-md">Success Rate</div>
+            <div className="w-full bg-white/30 h-2 rounded-full mb-1 overflow-hidden">
               <div className="bg-green-500 h-full" style={{ width: `${podium[0].successRate}%` }}></div>
             </div>
-            <div className="text-green-700 font-semibold text-sm">{podium[0].successRate.toFixed(1)}%</div>
+            <div className="text-green-300 font-semibold text-sm drop-shadow-md">{podium[0].successRate.toFixed(1)}%</div>
           </div>
           {/* Bronze */}
           <div
-            className="group w-[280px] h-[320px] rounded-2xl p-6 border border-white/30 flex flex-col items-center justify-center relative transition-all duration-300 ease-in-out hover:scale-105 hover:-rotate-2 hover:shadow-2xl"
+            className="group w-[280px] h-[320px] rounded-2xl p-6 border-2 border-orange-300 flex flex-col items-center justify-center relative transition-all duration-300 ease-in-out hover:scale-105 hover:-rotate-2 hover:shadow-2xl"
             style={{
-              background: "linear-gradient(to bottom, #f5deb3 0%, #cd7f32 30%, #b87333 60%, #8b4513 90%, #5a2d0c 100%)",
-              boxShadow: "0 4px 32px 0 rgba(205,127,50,0.13), 0 1.5px 8px 0 rgba(255,255,255,0.10)"
+              background: "linear-gradient(145deg, #cd7f32 0%, #b87333 20%, #a0522d 40%, #8b4513 60%, #6b3410 80%, #4a2c17 100%)",
+              boxShadow: "0 8px 32px 0 rgba(0,0,0,0.3), 0 4px 16px 0 rgba(205,127,50,0.4), inset 0 2px 4px rgba(255,255,255,0.3), inset 0 -2px 4px rgba(0,0,0,0.2)",
+              border: "2px solid rgba(205,127,50,0.6)"
             }}
-            onMouseOver={e => e.currentTarget.style.boxShadow = "0 6px 40px 0 rgba(255,255,255,0.18), 0 2px 12px 0 rgba(205,127,50,0.13)"}
-            onMouseOut={e => e.currentTarget.style.boxShadow = "0 4px 32px 0 rgba(205,127,50,0.13), 0 1.5px 8px 0 rgba(255,255,255,0.10)"}
+            onMouseOver={e => e.currentTarget.style.boxShadow = "0 12px 48px 0 rgba(0,0,0,0.4), 0 6px 24px 0 rgba(205,127,50,0.5), inset 0 2px 4px rgba(255,255,255,0.4), inset 0 -2px 4px rgba(0,0,0,0.3)"}
+            onMouseOut={e => e.currentTarget.style.boxShadow = "0 8px 32px 0 rgba(0,0,0,0.3), 0 4px 16px 0 rgba(205,127,50,0.4), inset 0 2px 4px rgba(255,255,255,0.3), inset 0 -2px 4px rgba(0,0,0,0.2)"}
           >
             {/* Only SVG icon remains, emoji removed */}
             <div className="absolute top-4 right-4">
@@ -270,15 +273,15 @@ export default function Leaderboard(props) {
             <div className="w-20 h-20 rounded-full border-2 border-white bg-white/10" style={{boxShadow:'0 0 12px 2px #fff, 0 0 8px 2px #fff8',backdropFilter:'blur(3px)'}}>
               <div className="flex items-center justify-center w-full h-full text-3xl font-bold text-white">{getInitials(podium[2].name)}</div>
             </div>
-            <button className="text-white text-xl font-bold mb-1 hover:underline hover:text-[#28c76f] transition" onClick={() => navigate(`/profile/${podium[2].id}`)}>{podium[2].name}</button>
-            <div className="text-white font-bold text-lg flex items-center gap-2 mb-2">
+            <button className="text-white text-xl font-bold mb-1 hover:underline hover:text-orange-200 transition drop-shadow-lg" onClick={() => navigate(`/profile/${podium[2].id}`)}>{podium[2].name}</button>
+            <div className="text-white font-bold text-lg flex items-center gap-2 mb-2 drop-shadow-lg">
               <span>🏆</span> {podium[2].tokens.toLocaleString()} Tokens
             </div>
-            <div className="text-sm text-white/80 mb-1">Success Rate</div>
-            <div className="w-full bg-orange-200/40 h-2 rounded-full mb-1 overflow-hidden">
-              <div className="bg-green-400 h-full" style={{ width: `${podium[2].successRate}%` }}></div>
+            <div className="text-sm text-white/90 mb-1 drop-shadow-md">Success Rate</div>
+            <div className="w-full bg-white/30 h-2 rounded-full mb-1 overflow-hidden">
+              <div className="bg-green-500 h-full" style={{ width: `${podium[2].successRate}%` }}></div>
             </div>
-            <div className="text-green-700 font-semibold text-sm">{podium[2].successRate.toFixed(1)}%</div>
+            <div className="text-green-300 font-semibold text-sm drop-shadow-md">{podium[2].successRate.toFixed(1)}%</div>
           </div>
         </div>
         {/* Complete Rankings Heading */}

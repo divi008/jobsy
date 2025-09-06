@@ -186,7 +186,7 @@ useEffect(() => {
         const baseFor = 2.0;
         const minFor = 1.05;
         const maxFor = 10.0;
-        const k = 0.00005; // smoother
+        const k = 0.0001; // more responsive
         let targetFor = baseFor;
         let targetAgainst = baseFor;
 
@@ -196,8 +196,8 @@ useEffect(() => {
         }
 
         const prev = companyStakes[companyId]?.[candidateId] || { for: baseFor.toFixed(2), against: baseFor.toFixed(2) };
-        const easedFor = Number(prev.for) + (targetFor - Number(prev.for)) * 0.2;
-        const easedAgainst = Number(prev.against) + (targetAgainst - Number(prev.against)) * 0.2;
+        const easedFor = Number(prev.for) + (targetFor - Number(prev.for)) * 0.6;
+        const easedAgainst = Number(prev.against) + (targetAgainst - Number(prev.against)) * 0.6;
 
         if (!newStakes[companyId]) newStakes[companyId] = {};
         newStakes[companyId][candidateId] = {

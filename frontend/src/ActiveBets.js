@@ -69,7 +69,7 @@ React.useEffect(() => {
   const baseFor = 2.0;
   const minFor = 1.05;
   const maxFor = 10.0;
-  const k = 0.00005; // smoother
+  const k = 0.0001; // more responsive
   activeCompanies.forEach(company => {
     const shortlisted = company.candidates || [];
     shortlisted.forEach(candidate => {
@@ -85,9 +85,9 @@ React.useEffect(() => {
         targetAgainst = Math.min(maxFor, baseFor + k * t_i);
       }
       const prev = companyStakes[companyId]?.[candidateId] || { for: baseFor.toFixed(2), against: baseFor.toFixed(2) };
-      // ease toward target
-      const easedFor = Number(prev.for) + (targetFor - Number(prev.for)) * 0.2;
-      const easedAgainst = Number(prev.against) + (targetAgainst - Number(prev.against)) * 0.2;
+      // ease toward target - increased responsiveness
+      const easedFor = Number(prev.for) + (targetFor - Number(prev.for)) * 0.6;
+      const easedAgainst = Number(prev.against) + (targetAgainst - Number(prev.against)) * 0.6;
       if (!newStakes[companyId]) newStakes[companyId] = {};
       newStakes[companyId][candidateId] = {
         for: easedFor.toFixed(2),
