@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import forumAdminApi from './services/forumAdminApi';
 import PageLayout from "./PageLayout";
 import axios from 'axios';
@@ -1515,10 +1515,12 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
                       try {
                         if (r.targetType === 'post') {
                           const data = await forumAdminApi.getPost(r.targetId);
-                          setViewModal({ open: true, targetType: 'post', data });
+                          setViewData({ targetType: 'post', data });
+                          handleOpenModal();
                         } else {
                           const data = await forumAdminApi.getComment(r.targetId);
-                          setViewModal({ open: true, targetType: 'comment', data });
+                          setViewData({ targetType: 'comment', data });
+                          handleOpenModal();
                         }
                       } catch (e) { alert('Failed to load target'); }
                     }}>View</button>
@@ -1535,17 +1537,22 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
       </div>
     );
   }
+  const [viewModal, setViewModal] = useState(false);
+  const [viewData, setViewData] = useState({ targetType: 'post', data: null });
+  const handleOpenModal = () => setViewModal(true);
+  const handleCloseModal = () => setViewModal(false);
+
   function ViewTargetModal() {
-    if (!viewModal.open || !viewModal.data) return null;
-    const v = viewModal.data;
+    if (!viewModal || !viewData.data) return null;
+    const v = viewData.data;
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
         <div className="rounded-2xl w-full max-w-3xl p-6 border-2 border-[#28c76f]/30 bg-[#0a0a0a] shadow-[0_20px_80px_rgba(0,0,0,0.7)] max-h-[90vh] overflow-y-auto">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-white text-xl font-bold">View {viewModal.targetType}</h3>
-            <button className="text-gray-300 hover:text-white text-2xl" onClick={() => setViewModal({ open:false, targetType:'post', data:null })}>&times;</button>
+            <h3 className="text-white text-xl font-bold">View {viewData.targetType}</h3>
+            <button className="text-gray-300 hover:text-white text-2xl" onClick={handleCloseModal}>&times;</button>
           </div>
-          {viewModal.targetType === 'post' ? (
+          {viewData.targetType === 'post' ? (
             <div className="text-gray-200">
               <div className="text-sm text-gray-400 mb-1">{new Date(v.createdAt).toLocaleString()} · {v.tag}</div>
               <div className="text-white text-2xl font-bold mb-2">{v.title}</div>
