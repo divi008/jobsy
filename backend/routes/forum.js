@@ -176,11 +176,45 @@ router.post('/report', auth, async (req, res) => {
     const { targetType, targetId, reason } = req.body;
     if (!['post','comment'].includes(targetType)) return res.status(400).json({ msg: 'Invalid target' });
     if (!reason || !reason.trim()) return res.status(400).json({ msg: 'Reason required' });
-    const report = await ForumReport.create({ reporter: req.user._id, targetType, targetId, reason: reason.trim() });
+    const userId = req.user?.id || req.user?._id;
+    if (!userId) return res.status(401).json({ msg: 'Auth user missing' });
+    const report = await ForumReport.create({ reporter: userId, targetType, targetId, reason: reason.trim() });
     return res.json(report);
   } catch (e) {
     return res.status(500).json({ msg: 'Failed to submit report' });
   }
+});
+
+// Delete own post (or admin)
+router.delete('/posts/:id', auth, async (req, res) => {
+  try {
+    const userId = req.user?.id || req.user?._id;
+    if (!userId) return res.status(401).json({ msg: 'Auth user missing' });
+    const post = await ForumPost.findById(req.params.id);
+    if (!post) return res.status(404).json({ msg: 'Not found' });
+    if (String(post.user) !== String(userId)) return res.status(403).json({ msg: 'Not authorized to delete this post' });
+    await ForumComment.deleteMany({ post: post._id });
+    await ForumVote.deleteMany({ post: post._id });
+    await ForumReport.deleteMany({ targetType: 'post', targetId: String(post._id) });
+    await post.deleteOne();
+    return res.json({ ok: true });
+  } catch (e) { return res.status(500).json({ msg: 'Failed to delete post' }); }
+});
+
+// Delete own comment (or admin)
+router.delete('/comments/:id', auth, async (req, res) => {
+  try {
+    const userId = req.user?.id || req.user?._id;
+    if (!userId) return res.status(401).json({ msg: 'Auth user missing' });
+    const comment = await ForumComment.findById(req.params.id);
+    if (!comment) return res.status(404).json({ msg: 'Not found' });
+    if (String(comment.user) !== String(userId)) return res.status(403).json({ msg: 'Not authorized to delete this comment' });
+    await ForumCommentVote.deleteMany({ comment: comment._id });
+    await ForumReport.deleteMany({ targetType: 'comment', targetId: String(comment._id) });
+    await comment.deleteOne();
+    await ForumPost.findByIdAndUpdate(comment.post, { $inc: { commentCount: -1 } });
+    return res.json({ ok: true });
+  } catch (e) { return res.status(500).json({ msg: 'Failed to delete comment' }); }
 });
 
 export default router;

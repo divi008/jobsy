@@ -71,24 +71,17 @@ export default function Forum(props) {
   }
 
   async function voteOnPost(post, type) {
-    const old = { ...post };
-    const idx = posts.findIndex(p => p._id === post._id);
-    if (idx >= 0) {
-      const updated = { ...post };
-      if (type === 'up') updated.upvotes += 1; if (type === 'down') updated.downvotes += 1;
-      setPosts(arr => arr.toSpliced(idx, 1, updated));
-    }
     try {
       const res = await votePost(post._id, type);
       setPosts(arr => arr.map(p => p._id === post._id ? { ...p, upvotes: res.upvotes, downvotes: res.downvotes } : p));
-    } catch(e) { setPosts(arr => arr.map(p => p._id === post._id ? old : p)); }
+    } catch(e) { /* no change on error */ }
   }
 
   async function voteOnComment(comment, type) {
     try {
       const res = await voteComment(comment._id, type);
       setDetail(d => ({ ...d, comments: d.comments.map(c => c._id === comment._id ? { ...c, upvotes: res.upvotes, downvotes: res.downvotes } : c) }));
-    } catch(e) { /* noop optimistic */ }
+    } catch(e) { /* no change */ }
   }
 
   async function addNewComment(payload) {
