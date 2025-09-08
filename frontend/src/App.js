@@ -428,10 +428,7 @@ function LandingPage({ loadUser }) {
       )}
       {/* Removed duplicate OTP-only modal to avoid confusion */}
       {/* Main Content (always rendered) */}
-      <div className="min-h-screen w-full flex items-center justify-center" style={{
-        background: 'radial-gradient(circle at center, #0d4f3c 0%, #0a3d2e 25%, #062e22 50%, #000000 100%)',
-        backgroundAttachment: 'fixed'
-      }}>
+      <div className="min-h-screen w-full flex items-center justify-center">
         <motion.div
           className="relative z-10 flex flex-col md:flex-row gap-16 w-full max-w-7xl px-6 items-start"
           initial="hidden"
