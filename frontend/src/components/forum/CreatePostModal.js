@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 export default function CreatePostModal({ open, onClose, onSubmit }) {
-  const [form, setForm] = useState({ title: '', body: '', tag: 'General', isAnonymous: true, authorName: '', authorBranch: '', authorRollNo: '' });
+  const [form, setForm] = useState({ title: '', body: '', tag: 'General', isAnonymous: true, authorName: '', authorCourse: '', authorBranch: '', authorRollNo: '' });
   const [submitting, setSubmitting] = useState(false);
+  const [branchOptions, setBranchOptions] = useState([]);
 
   if (!open) return null;
 
@@ -13,7 +15,7 @@ export default function CreatePostModal({ open, onClose, onSubmit }) {
 
   const doSubmit = async () => {
     if (!form.title || form.title.length > 150) return alert('Title is required and <= 150 chars');
-    if (!form.isAnonymous && (!form.authorName || !form.authorBranch || !form.authorRollNo)) return alert('Name, Branch, Roll are required when not anonymous');
+    if (!form.isAnonymous && (!form.authorName || !form.authorCourse || !form.authorBranch || !form.authorRollNo)) return alert('Name, Course, Branch, Roll are required when not anonymous');
     try {
       setSubmitting(true);
       await onSubmit(form);
@@ -22,6 +24,21 @@ export default function CreatePostModal({ open, onClose, onSubmit }) {
       setSubmitting(false);
     }
   };
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/candidates`);
+        const branches = Array.from(new Set((res.data || []).map(c => {
+          const b = c.branch || '';
+          const m = /^([^()]+)\s*\(([^)]+)\)/.exec(b);
+          if (m) return { course: m[1].trim(), branch: m[2].trim() };
+          return { course: (c.course || '').trim(), branch: (c.branch || '').trim() };
+        }).filter(x => x.course && x.branch)));
+        setBranchOptions(branches);
+      } catch (e) { setBranchOptions([]); }
+    })();
+  }, [open]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
@@ -60,8 +77,22 @@ export default function CreatePostModal({ open, onClose, onSubmit }) {
                 <input name="authorName" value={form.authorName} onChange={handleChange} className="w-full mt-1 rounded-md bg-black text-white border border-gray-600 px-3 py-2" />
               </div>
               <div>
+                <label className="text-sm text-gray-300">Course</label>
+                <select name="authorCourse" value={form.authorCourse} onChange={handleChange} className="w-full mt-1 rounded-md bg-black text-white border border-gray-600 px-3 py-2">
+                  <option value="">Select Course</option>
+                  {Array.from(new Set(branchOptions.map(o => o.course))).map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
                 <label className="text-sm text-gray-300">Branch</label>
-                <input name="authorBranch" value={form.authorBranch} onChange={handleChange} className="w-full mt-1 rounded-md bg-black text-white border border-gray-600 px-3 py-2" />
+                <select name="authorBranch" value={form.authorBranch} onChange={handleChange} disabled={!form.authorCourse} className="w-full mt-1 rounded-md bg-black text-white border border-gray-600 px-3 py-2">
+                  <option value="">Select Branch</option>
+                  {branchOptions.filter(o => o.course === form.authorCourse).map(o => (
+                    <option key={`${o.course}-${o.branch}`} value={`${o.course} (${o.branch})`}>{o.branch}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="text-sm text-gray-300">Roll No</label>
@@ -78,5 +109,6 @@ export default function CreatePostModal({ open, onClose, onSubmit }) {
     </div>
   );
 }
+
 
 

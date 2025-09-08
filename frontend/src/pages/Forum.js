@@ -6,12 +6,16 @@ import CreatePostModal from '../components/forum/CreatePostModal';
 import PostDetailModal from '../components/forum/PostDetailModal';
 import ReportModal from '../components/forum/ReportModal';
 import useInfiniteScroll from '../hooks/useInfiniteScroll';
+import axios from 'axios';
 
 export default function Forum(props) {
   const { user } = props;
   const [posts, setPosts] = useState([]);
   const [sort, setSort] = useState('upvotes');
   const [filter, setFilter] = useState('');
+  const [branchFilter, setBranchFilter] = useState('');
+  const [companyFilter, setCompanyFilter] = useState('');
+  const [roleFilter, setRoleFilter] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -23,18 +27,22 @@ export default function Forum(props) {
 
   const { sentinelRef } = useInfiniteScroll({ hasMore, onLoadMore: () => loadMore() });
 
+  const [allBranches, setAllBranches] = useState([]);
+  const [companies, setCompanies] = useState([]);
+  const [roles, setRoles] = useState([]);
+
   useEffect(() => {
     // reset list when controls change
     setPosts([]); setPage(1); setHasMore(true);
-  }, [sort, filter, search]);
+  }, [sort, filter, branchFilter, companyFilter, roleFilter, search]);
 
-  useEffect(() => { if (hasMore) loadMore(); }, [sort, filter, search, hasMore]);
+  useEffect(() => { if (hasMore) loadMore(); }, [sort, filter, branchFilter, companyFilter, roleFilter, search, hasMore]);
 
   async function loadMore() {
     if (loading) return;
     setLoading(true);
     try {
-      const data = await fetchPosts({ sort, filter, search, page, limit: 10 });
+      const data = await fetchPosts({ sort, filter, search, page, limit: 10, branch: branchFilter, company: companyFilter, role: roleFilter });
       setPosts(prev => [...prev, ...data]);
       setPage(prev => prev + 1);
       if (!data || data.length < 10) setHasMore(false);
@@ -42,6 +50,30 @@ export default function Forum(props) {
       setHasMore(false);
     } finally { setLoading(false); }
   }
+
+  // Load filter options from existing data endpoints
+  useEffect(() => {
+    (async () => {
+      try {
+        const [candRes, evRes] = await Promise.all([
+          axios.get(`${process.env.REACT_APP_API_URL}/api/candidates`),
+          axios.get(`${process.env.REACT_APP_API_URL}/api/events`)
+        ]);
+        const branches = Array.from(new Set((candRes.data || []).map(c => {
+          const b = c.branch || '';
+          const m = /^([^()]+)\s*\(([^)]+)\)/.exec(b);
+          if (m) return `${m[1].trim()} (${m[2].trim()})`;
+          return `${(c.course || '').trim()} (${(c.branch || '').trim()})`;
+        }).filter(Boolean))).sort();
+        setAllBranches(branches);
+        const evs = evRes.data || [];
+        setCompanies(Array.from(new Set(evs.map(e => e.companyName).filter(Boolean))).sort());
+        setRoles(Array.from(new Set(evs.map(e => e.jobProfile).filter(Boolean))).sort());
+      } catch (e) {
+        // ignore
+      }
+    })();
+  }, []);
 
   // Actions
   async function handleCreate(form) {
@@ -118,6 +150,18 @@ export default function Forum(props) {
           <option>Company</option>
           <option>Branch</option>
         </select>
+        <select value={companyFilter} onChange={(e)=>setCompanyFilter(e.target.value)} className="rounded-md bg-black text-white border border-gray-600 px-3 py-2">
+          <option value="">All Companies</option>
+          {companies.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+        <select value={roleFilter} onChange={(e)=>setRoleFilter(e.target.value)} className="rounded-md bg-black text-white border border-gray-600 px-3 py-2">
+          <option value="">All Roles</option>
+          {roles.map(r => <option key={r} value={r}>{r}</option>)}
+        </select>
+        <select value={branchFilter} onChange={(e)=>setBranchFilter(e.target.value)} className="rounded-md bg-black text-white border border-gray-600 px-3 py-2">
+          <option value="">All Branches</option>
+          {allBranches.map(b => <option key={b} value={b}>{b}</option>)}
+        </select>
         <input value={search} onChange={(e)=>setSearch(e.target.value)} placeholder="Search..." className="rounded-md bg-black text-white border border-gray-600 px-3 py-2" />
         <button onClick={()=>setShowCreate(true)} className="px-4 py-2 rounded-md bg-[#28c76f] text-black font-semibold hover:bg-[#22b455] shadow-[0_10px_30px_rgba(40,199,111,0.35)]">Create Confession</button>
       </div>
@@ -155,5 +199,6 @@ export default function Forum(props) {
     </PageLayout>
   );
 }
+
 
 

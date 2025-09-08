@@ -7,7 +7,7 @@ const ForumPostSchema = new mongoose.Schema({
   tag: { type: String, enum: ['General', 'Company', 'Branch'], default: 'General' },
   isAnonymous: { type: Boolean, default: false },
   authorName: { type: String, default: '' },
-  authorBranch: { type: String, default: '' },
+  authorBranch: { type: String, default: '' }, // Store like "B.Tech (Mechanical Engineering)"
   authorRollNo: { type: String, default: '' },
   upvotes: { type: Number, default: 0 },
   downvotes: { type: Number, default: 0 },
@@ -17,5 +17,6 @@ const ForumPostSchema = new mongoose.Schema({
 ForumPostSchema.index({ title: 'text', body: 'text' });
 
 export default mongoose.model('ForumPost', ForumPostSchema);
+
 
 

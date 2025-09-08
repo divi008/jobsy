@@ -36,10 +36,13 @@ router.post('/posts', auth, banCheck('confession'), async (req, res) => {
 // List posts with sorting/filter/search/pagination
 router.get('/posts', auth, async (req, res) => {
   try {
-    const { sort = 'upvotes', filter, search, page = 1, limit = 10 } = req.query;
+    const { sort = 'upvotes', filter, search, page = 1, limit = 10, branch, company, role } = req.query;
     const q = {};
     if (filter && ['General','Company','Branch'].includes(filter)) q.tag = filter;
     if (search) q.$text = { $search: search };
+    if (branch) q.authorBranch = branch;
+    if (company) q.body = q.body ? { ...q.body, $regex: company, $options: 'i' } : { $regex: company, $options: 'i' };
+    if (role) q.body = q.body ? { ...q.body, $regex: role, $options: 'i' } : { $regex: role, $options: 'i' };
 
     let cursor = ForumPost.find(q);
     if (sort === 'newest') {
@@ -173,5 +176,6 @@ router.post('/report', auth, async (req, res) => {
 });
 
 export default router;
+
 
 
