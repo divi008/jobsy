@@ -21,6 +21,10 @@ const userSchema = new mongoose.Schema({
   // Password reset
   resetPasswordOtp: { type: String },
   resetPasswordExpiry: { type: Date },
+  // Forum moderation
+  isBanned: { type: Boolean, default: false },
+  banType: { type: String, enum: ['confession','comment','both', null], default: null },
+  banReason: { type: String, default: '' },
 }, { timestamps: true });
 
 // This "pre-save hook" automatically hashes the password before saving

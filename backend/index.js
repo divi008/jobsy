@@ -9,6 +9,8 @@ import betRoutes from './routes/bets.js';
 import eventRoutes from './routes/companyBetEvents.js';
 import candidateRoutes from './routes/candidates.js';
 import adminRoutes from './routes/admin.js';
+import forumRoutes from './routes/forum.js';
+import adminForumRoutes from './routes/adminForum.js';
 
 dotenv.config();
 const app = express();
@@ -32,6 +34,8 @@ app.use('/api/bets', betRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/candidates', candidateRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/forum', forumRoutes);
+app.use('/api/admin', adminForumRoutes);
 
 // Root route
 app.get('/', (req, res) => {
