@@ -1645,6 +1645,37 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
       />
       <div className="w-full max-w-6xl mx-auto mt-4">
         <h1 className="text-4xl font-extrabold text-[#28c76f] mb-4 text-center">Betting Admin Panel</h1>
+        {/* Forum Moderation */}
+        <div className="mt-10 rounded-2xl border-2 border-[#28c76f]/30 p-6 bg-[#101414] shadow-[0_12px_40px_rgba(0,0,0,0.4)]">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold text-white">Forum Moderation</h2>
+            <div className="flex gap-2">
+              <input id="forum-search" placeholder="Search reason..." className="rounded-md bg-black text-white border border-gray-600 px-3 py-2" />
+              <select id="forum-status" className="rounded-md bg-black text-white border border-gray-600 px-3 py-2">
+                <option value="">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="resolved">Resolved</option>
+              </select>
+              <select id="forum-type" className="rounded-md bg-black text-white border border-gray-600 px-3 py-2">
+                <option value="">All Types</option>
+                <option value="post">Posts</option>
+                <option value="comment">Comments</option>
+              </select>
+              <button id="forum-refresh" className="px-4 py-2 rounded-md bg-[#28c76f] text-black font-semibold hover:bg-[#22b455]">Refresh</button>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="rounded-xl border border-[#28c76f]/20 p-4 bg-[#121212]">
+              <h3 className="text-white font-bold mb-3">Reported Posts</h3>
+              <div id="reported-posts" className="text-gray-300 text-sm">Loading...</div>
+            </div>
+            <div className="rounded-xl border border-[#28c76f]/20 p-4 bg-[#121212]">
+              <h3 className="text-white font-bold mb-3">Reported Comments</h3>
+              <div id="reported-comments" className="text-gray-300 text-sm">Loading...</div>
+            </div>
+          </div>
+          <style>{`.admin-action{border:1px solid #333;padding:6px 10px;border-radius:8px} .admin-action:hover{border-color:#28c76f}`}</style>
+        </div>
         <div className="flex flex-wrap justify-between mb-4 gap-2">
           <button className="bg-[#28c76f] hover:bg-[#22b36a] text-white font-bold px-4 py-2 rounded-lg flex items-center gap-2 text-base shadow" onClick={() => setShowAddModal(true)}>
             <span className="text-xl">＋</span> Add Company
