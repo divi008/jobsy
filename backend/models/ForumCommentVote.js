@@ -11,3 +11,6 @@ ForumCommentVoteSchema.index({ comment: 1, user: 1 }, { unique: true });
 export default mongoose.model('ForumCommentVote', ForumCommentVoteSchema);
 
 
+
+
+

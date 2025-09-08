@@ -11,3 +11,6 @@ ForumVoteSchema.index({ post: 1, user: 1 }, { unique: true });
 export default mongoose.model('ForumVote', ForumVoteSchema);
 
 
+
+
+

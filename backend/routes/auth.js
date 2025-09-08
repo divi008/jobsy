@@ -67,9 +67,11 @@ router.get('/test-email', async (req, res) => {
 // @route   POST api/auth/send-verification-email
 // @desc    Send email verification OTP
 router.post('/send-verification-email', async (req, res) => {
-  const { email, enrollmentNumber } = req.body;
+  const { email: rawEmail, enrollmentNumber: rawEnrollment } = req.body;
   
   try {
+    const email = (rawEmail || '').trim().toLowerCase();
+    const enrollmentNumber = (rawEnrollment || '').trim();
     // Reject non-institute emails up front
     const allowedDomains = ['itbhu.ac.in','iitbhu.ac.in'];
     const emailDomain = (email || '').split('@')[1];
@@ -77,9 +79,9 @@ router.post('/send-verification-email', async (req, res) => {
       return res.status(400).json({ msg: 'Only institute emails allowed (@itbhu.ac.in or @iitbhu.ac.in)' });
     }
 
-    // Enrollment number collision (if provided)
+    // Enrollment number collision (if provided) — block if ANY user already has it
     if (enrollmentNumber) {
-      const existingEnrollment = await User.findOne({ enrollmentNumber, isEmailVerified: true });
+      const existingEnrollment = await User.findOne({ enrollmentNumber });
       if (existingEnrollment) {
         return res.status(400).json({ msg: 'Enrollment number already exists' });
       }
@@ -88,8 +90,8 @@ router.post('/send-verification-email', async (req, res) => {
     // Find existing by email
     let user = await User.findOne({ email });
 
-    // If verified user already exists with this email, block before sending OTP
-    if (user && user.isEmailVerified) {
+    // If a full/verified account exists with this email, block before sending OTP
+    if (user && (user.isEmailVerified || user.password || user.name)) {
       return res.status(400).json({ msg: 'Email already exists' });
     }
 

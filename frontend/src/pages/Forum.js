@@ -111,23 +111,36 @@ export default function Forum(props) {
         <h1 className="text-5xl font-extrabold text-[#28c76f] leading-tight">Jobsy Forum</h1>
         <div className="text-gray-400 text-base">A space for open discussions and honest confessions.</div>
       </div>
-      <div className="flex flex-col md:flex-row gap-3 md:items-center justify-center">
-        <select value={sort} onChange={(e)=>setSort(e.target.value)} className="h-12 rounded-lg bg-[#0b0f0f] text-white border border-[#28c76f]/30 px-3">
-          <option value="upvotes">Most Upvotes</option>
-          <option value="newest">Newest</option>
-          <option value="comments">Most Commented</option>
-        </select>
-        <select value={filter} onChange={(e)=>setFilter(e.target.value)} className="h-12 rounded-lg bg-[#0b0f0f] text-white border border-[#28c76f]/30 px-3">
-          <option value="">All Tags</option>
-          <option>General</option>
-          <option>Company</option>
-          <option>Branch</option>
-        </select>
-        <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">🔎</span>
-          <input value={search} onChange={(e)=>setSearch(e.target.value)} placeholder="Search..." className="h-12 pl-9 pr-3 rounded-lg bg-[#0b0f0f] text-white border border-[#28c76f]/30" />
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-full max-w-2xl">
+          <div className="relative w-full">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#28c76f" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-2-2"/></svg>
+            </span>
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search posts..."
+              className="w-full pl-10 pr-4 py-2 sm:py-3 bg-[#232b2b] border border-[#28c76f]/30 text-gray-200 text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-[#28c76f]"
+              style={{ borderRadius: 0 }}
+            />
+          </div>
         </div>
-        <button onClick={()=>setShowCreate(true)} className="h-12 px-5 rounded-lg bg-[#28c76f] text-black font-semibold hover:bg-[#22b455] shadow-[0_10px_30px_rgba(40,199,111,0.35)]">Create Confession</button>
+        <div className="flex flex-col md:flex-row gap-3 md:items-center justify-center w-full max-w-3xl">
+          <select value={sort} onChange={(e)=>setSort(e.target.value)} className="h-12 bg-[#232b2b] text-gray-200 border border-[#28c76f]/30 px-3" style={{ borderRadius: 0 }}>
+            <option value="upvotes">Most Upvotes</option>
+            <option value="newest">Newest</option>
+            <option value="comments">Most Commented</option>
+          </select>
+          <select value={filter} onChange={(e)=>setFilter(e.target.value)} className="h-12 bg-[#232b2b] text-gray-200 border border-[#28c76f]/30 px-3" style={{ borderRadius: 0 }}>
+            <option value="">All Tags</option>
+            <option>General</option>
+            <option>Company</option>
+            <option>Branch</option>
+          </select>
+          <button onClick={()=>setShowCreate(true)} className="h-12 px-5 bg-[#28c76f] text-black font-semibold hover:bg-[#22b455] shadow-[0_10px_30px_rgba(40,199,111,0.35)]" style={{ borderRadius: 0 }}>Create Confession</button>
+        </div>
       </div>
     </motion.div>
   );

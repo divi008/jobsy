@@ -1103,14 +1103,14 @@ function SelectCarouselModal({ open, onClose, onSubmit }) {
         const events = Array.isArray(res.data) ? res.data : [];
         const active = events.filter(e => e.status === 'active');
         setAvailableCompanies(active.map(e => ({ id: e._id, name: e.companyName, role: e.jobProfile, liveEventSection: e.liveEventSection, logo: e.companyLogo })));
-        const logos = {};
+      const logos = {};
         active.forEach(e => { logos[e._id] = e.companyLogo || ''; });
-        setCompanyLogos(logos);
+      setCompanyLogos(logos);
         setSelectedCompanies([]);
       } catch (e) {
         console.error('Failed to load active events for carousel', e);
         setAvailableCompanies([]);
-      }
+    }
     })();
   }, [open]);
 
