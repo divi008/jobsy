@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import forumAdminApi from './services/forumAdminApi';
 import PageLayout from "./PageLayout";
 import axios from 'axios';
 import { mockCompanies, mockCandidates, mockBets, adminCarouselCompanyIds } from "./mockData";
@@ -1397,6 +1398,11 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
   const [candidateSearchTerm, setCandidateSearchTerm] = useState("");
   const [candidateBranchFilter, setCandidateBranchFilter] = useState("all");
   const [showEditShortlistModal, setShowEditShortlistModal] = useState(false);
+  // Forum moderation state
+  const [reports, setReports] = useState([]);
+  const [reportsLoading, setReportsLoading] = useState(false);
+  const [reportFilters, setReportFilters] = useState({ type: '', status: '', q: '' });
+  const [reportRefreshTick, setReportRefreshTick] = useState(0);
   
   // Load companies, bets, and candidates from backend on mount/refresh
   useEffect(() => {
@@ -1435,6 +1441,89 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
     };
     fetchAdminData();
   }, [refresh]);
+
+  // Forum reports loader
+  useEffect(() => {
+    async function loadReports() {
+      try {
+        setReportsLoading(true);
+        const params = {};
+        if (reportFilters.type) params.type = reportFilters.type;
+        if (reportFilters.status) params.status = reportFilters.status;
+        if (reportFilters.q) params.q = reportFilters.q;
+        const data = await forumAdminApi.fetchReports(params);
+        setReports(data || []);
+      } catch (e) {
+        // noop
+      } finally { setReportsLoading(false); }
+    }
+    loadReports();
+  }, [reportFilters, reportRefreshTick]);
+
+  function AdminReportsTable({ type }) {
+    const filtered = useMemo(() => (
+      (reports || []).filter(r => (type ? r.targetType === type : true))
+    ), [reports, type]);
+
+    async function handleResolve(id) {
+      await forumAdminApi.resolveReport(id);
+      setReportRefreshTick(x => x + 1);
+    }
+    async function handleDelete(targetType, id) {
+      if (targetType === 'post') await forumAdminApi.deletePost(id);
+      else await forumAdminApi.deleteComment(id);
+      setReportRefreshTick(x => x + 1);
+    }
+    async function handleBan(userId) {
+      const type = prompt('Ban type: confession | comment | both', 'both');
+      if (!type) return;
+      const reason = prompt('Reason (optional)', '');
+      await forumAdminApi.banUser(userId, { type, reason });
+      alert('User banned');
+    }
+    async function handleUnban(userId) {
+      await forumAdminApi.unbanUser(userId);
+      alert('User unbanned');
+    }
+
+    return (
+      <div className="overflow-auto">
+        {reportsLoading ? (
+          <div className="text-gray-400">Loading...</div>
+        ) : filtered.length === 0 ? (
+          <div className="text-gray-400">No reports</div>
+        ) : (
+          <table className="min-w-full text-left text-sm">
+            <thead>
+              <tr className="text-[#28c76f] border-b border-[#28c76f]/20">
+                <th className="py-2 px-3">Report ID</th>
+                <th className="py-2 px-3">Target</th>
+                <th className="py-2 px-3">Reason</th>
+                <th className="py-2 px-3">Status</th>
+                <th className="py-2 px-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map(r => (
+                <tr key={r._id} className="border-b border-[#28c76f]/10 text-gray-200">
+                  <td className="py-2 px-3 align-top">{r._id}</td>
+                  <td className="py-2 px-3 align-top">{r.targetType}</td>
+                  <td className="py-2 px-3 align-top max-w-[320px] truncate" title={r.reason}>{r.reason}</td>
+                  <td className="py-2 px-3 align-top">{r.status}</td>
+                  <td className="py-2 px-3 align-top flex gap-2 flex-wrap">
+                    <button className="admin-action" onClick={() => handleResolve(r._id)}>Resolve</button>
+                    <button className="admin-action" onClick={() => handleDelete(r.targetType, r.targetId)}>Delete</button>
+                    <button className="admin-action" onClick={() => handleBan(r.reporter)}>Ban User</button>
+                    <button className="admin-action" onClick={() => handleUnban(r.reporter)}>Unban</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    );
+  }
   const [bets, setBets] = useState([]);
   const openAddIndividualGlobal = () => setShowAddIndividualModal(true);
 
@@ -1667,11 +1756,11 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="rounded-xl border border-[#28c76f]/20 p-4 bg-[#121212]">
               <h3 className="text-white font-bold mb-3">Reported Posts</h3>
-              <div id="reported-posts" className="text-gray-300 text-sm">Loading...</div>
+              <AdminReportsTable type="post" />
             </div>
             <div className="rounded-xl border border-[#28c76f]/20 p-4 bg-[#121212]">
               <h3 className="text-white font-bold mb-3">Reported Comments</h3>
-              <div id="reported-comments" className="text-gray-300 text-sm">Loading...</div>
+              <AdminReportsTable type="comment" />
             </div>
           </div>
           <style>{`.admin-action{border:1px solid #333;padding:6px 10px;border-radius:8px} .admin-action:hover{border-color:#28c76f}`}</style>
