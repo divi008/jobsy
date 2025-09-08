@@ -124,7 +124,7 @@ export default function Forum(props) {
           <option>Branch</option>
         </select>
         <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">🔍</span>
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">🔎</span>
           <input value={search} onChange={(e)=>setSearch(e.target.value)} placeholder="Search..." className="h-12 pl-9 pr-3 rounded-lg bg-[#0b0f0f] text-white border border-[#28c76f]/30" />
         </div>
         <button onClick={()=>setShowCreate(true)} className="h-12 px-5 rounded-lg bg-[#28c76f] text-black font-semibold hover:bg-[#22b455] shadow-[0_10px_30px_rgba(40,199,111,0.35)]">Create Confession</button>

@@ -70,6 +70,13 @@ router.post('/send-verification-email', async (req, res) => {
   const { email, enrollmentNumber } = req.body;
   
   try {
+    // Reject non-institute emails up front
+    const allowedDomains = ['itbhu.ac.in','iitbhu.ac.in'];
+    const emailDomain = (email || '').split('@')[1];
+    if (!allowedDomains.includes((emailDomain || '').toLowerCase())) {
+      return res.status(400).json({ msg: 'Only institute emails allowed (@itbhu.ac.in or @iitbhu.ac.in)' });
+    }
+
     // Enrollment number collision (if provided)
     if (enrollmentNumber) {
       const existingEnrollment = await User.findOne({ enrollmentNumber, isEmailVerified: true });
@@ -80,6 +87,11 @@ router.post('/send-verification-email', async (req, res) => {
 
     // Find existing by email
     let user = await User.findOne({ email });
+
+    // If verified user already exists with this email, block before sending OTP
+    if (user && user.isEmailVerified) {
+      return res.status(400).json({ msg: 'Email already exists' });
+    }
 
     // Prepare OTP
     const otp = generateOTP();

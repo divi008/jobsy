@@ -8,12 +8,7 @@ export const createTransporter = () => {
   const emailHost = process.env.EMAIL_HOST || 'smtp.gmail.com';
   const emailPort = process.env.EMAIL_PORT || 587;
   
-  console.log('=== EMAIL CONFIG DEBUG ===');
-  console.log('EMAIL_PASSWORD:', emailPassword ? '***SET***' : 'NOT SET');
-  console.log('EMAIL_USER:', emailUser);
-  console.log('EMAIL_HOST:', emailHost);
-  console.log('EMAIL_PORT:', emailPort);
-  console.log('==========================');
+  // Minimal logging in production
   
   if (!emailPassword) {
     console.warn('EMAIL_PASSWORD not configured. Email functionality will be disabled.');
@@ -51,14 +46,10 @@ export const sendVerificationEmail = async (email, otp) => {
   try {
     const transporter = createTransporter();
     
-    // For now, let's log the OTP to console for testing
-    console.log('=== EMAIL VERIFICATION ===');
-    console.log('Email:', email);
-    console.log('OTP:', otp);
-    console.log('========================');
+    //
     
     if (!transporter) {
-      console.log('Email service not configured. OTP logged to console for testing.');
+      console.warn('Email service not configured.');
       return true; // Return true to avoid blocking the flow
     }
 
@@ -98,16 +89,10 @@ export const sendVerificationEmail = async (email, otp) => {
     };
 
     const info = await transporter.sendMail(mailOptions);
-    console.log('Verification email sent successfully to:', email);
-    console.log('Message ID:', info.messageId);
-    console.log('Response:', info.response);
+    // success
     return true;
   } catch (error) {
-    console.error('Email sending failed:', error);
-    console.error('Error details:', error.message);
-    
-    // For testing purposes, still return true so the flow continues
-    console.log('Email failed but continuing for testing. OTP logged above.');
+    console.error('Email sending failed:', error?.message || error);
     return true;
   }
 };
@@ -117,14 +102,10 @@ export const sendPasswordResetEmail = async (email, otp) => {
   try {
     const transporter = createTransporter();
     
-    // For now, let's log the OTP to console for testing
-    console.log('=== PASSWORD RESET EMAIL ===');
-    console.log('Email:', email);
-    console.log('OTP:', otp);
-    console.log('===========================');
+    //
     
     if (!transporter) {
-      console.log('Email service not configured. OTP logged to console for testing.');
+      console.warn('Email service not configured.');
       return true; // Return true to avoid blocking the flow
     }
 
@@ -164,16 +145,10 @@ export const sendPasswordResetEmail = async (email, otp) => {
     };
 
     const info = await transporter.sendMail(mailOptions);
-    console.log('Password reset email sent successfully to:', email);
-    console.log('Message ID:', info.messageId);
-    console.log('Response:', info.response);
+    // success
     return true;
   } catch (error) {
-    console.error('Password reset email sending failed:', error);
-    console.error('Error details:', error.message);
-    
-    // For testing purposes, still return true so the flow continues
-    console.log('Email failed but continuing for testing. OTP logged above.');
+    console.error('Password reset email sending failed:', error?.message || error);
     return true;
   }
 }; 
