@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import forumAdminApi from './services/forumAdminApi';
+import ViewReportModal from './components/admin/ViewReportModal';
 import PageLayout from "./PageLayout";
 import axios from 'axios';
 import { mockCompanies, mockCandidates, mockBets, adminCarouselCompanyIds } from "./mockData";
@@ -1515,12 +1516,10 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
                       try {
                         if (r.targetType === 'post') {
                           const data = await forumAdminApi.getPost(r.targetId);
-                          setViewData({ targetType: 'post', data });
-                          handleOpenModal();
+                          handleOpenModal({ targetType: 'post', data });
                         } else {
                           const data = await forumAdminApi.getComment(r.targetId);
-                          setViewData({ targetType: 'comment', data });
-                          handleOpenModal();
+                          handleOpenModal({ targetType: 'comment', data });
                         }
                       } catch (e) { alert('Failed to load target'); }
                     }}>View</button>
@@ -1537,37 +1536,13 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
       </div>
     );
   }
-  const [viewModal, setViewModal] = useState(false);
-  const [viewData, setViewData] = useState({ targetType: 'post', data: null });
-  const handleOpenModal = () => setViewModal(true);
-  const handleCloseModal = () => setViewModal(false);
+  const [viewModal, setViewModal] = useState(null); // { targetType, data }
+  const handleOpenModal = (payload) => setViewModal(payload);
+  const handleCloseModal = () => setViewModal(null);
 
-  function ViewTargetModal() {
-    if (!viewModal || !viewData.data) return null;
-    const v = viewData.data;
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-        <div className="rounded-2xl w-full max-w-3xl p-6 border-2 border-[#28c76f]/30 bg-[#0a0a0a] shadow-[0_20px_80px_rgba(0,0,0,0.7)] max-h-[90vh] overflow-y-auto">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-white text-xl font-bold">View {viewData.targetType}</h3>
-            <button className="text-gray-300 hover:text-white text-2xl" onClick={handleCloseModal}>&times;</button>
-          </div>
-          {viewData.targetType === 'post' ? (
-            <div className="text-gray-200">
-              <div className="text-sm text-gray-400 mb-1">{new Date(v.createdAt).toLocaleString()} · {v.tag}</div>
-              <div className="text-white text-2xl font-bold mb-2">{v.title}</div>
-              <div className="whitespace-pre-wrap">{v.body}</div>
-            </div>
-          ) : (
-            <div className="text-gray-200">
-              <div className="text-sm text-gray-400 mb-1">{new Date(v.createdAt).toLocaleString()}</div>
-              <div className="whitespace-pre-wrap">{v.body}</div>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
+  const viewModalRender = viewModal && (
+    <ViewReportModal data={viewModal} onClose={handleCloseModal} />
+  );
   const [bets, setBets] = useState([]);
   const openAddIndividualGlobal = () => setShowAddIndividualModal(true);
 
@@ -1809,7 +1784,7 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
           </div>
           <style>{`.admin-action{border:1px solid #333;padding:6px 10px;border-radius:8px} .admin-action:hover{border-color:#28c76f}`}</style>
         </div>
-        <ViewTargetModal />
+        {viewModalRender}
         <div className="flex flex-wrap justify-between mb-4 gap-2">
           <button className="bg-[#28c76f] hover:bg-[#22b36a] text-white font-bold px-4 py-2 rounded-lg flex items-center gap-2 text-base shadow" onClick={() => setShowAddModal(true)}>
             <span className="text-xl">＋</span> Add Company
