@@ -33,7 +33,7 @@ export default function Layout({ user, tokens, setTokens, showUserGuideModal, se
         <a href="/my-bets" className="py-3 text-lg font-semibold hover:text-[#28c76f]" onClick={() => setMobileNavOpen(false)}>My Bets</a>
         <a href="/profile" className="py-3 text-lg font-semibold hover:text-[#28c76f]" onClick={() => setMobileNavOpen(false)}>Profile</a>
         <a href="/leaderboard" className="py-3 text-lg font-semibold hover:text-[#28c76f]" onClick={() => setMobileNavOpen(false)}>Leaderboard</a>
-        <a href="/placement-data" className="py-3 text-lg font-semibold hover:text-[#28c76f]" onClick={() => setMobileNavOpen(false)}>Placement Data</a>
+        <a href="/forum" className="py-3 text-lg font-semibold hover:text-[#28c76f]" onClick={() => setMobileNavOpen(false)}>Forum</a>
         <a href="/see-shortlists" className="py-3 text-lg font-semibold hover:text-[#28c76f]" onClick={() => setMobileNavOpen(false)}>See Shortlists</a>
         {/* Profile Dropdown for mobile (reuse DropdownMenu if possible) */}
         <div className="mt-6 border-t border-white/20 pt-4">

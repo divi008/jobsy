@@ -12,7 +12,7 @@ import Shortlists from "./Shortlists";
 import ExpiredBets from "./ExpiredBets";
 import Leaderboard from "./Leaderboard";
 import AdminPanel from "./AdminPanel";
-import PlacementData from "./PlacementData";
+import Forum from "./pages/Forum";
 import { mockUsers } from "./mockUsers";
 import { motion } from "framer-motion";
 // Remove: import UserGuide from "./UserGuide";
@@ -1019,7 +1019,7 @@ export default function App() {
           <Route path="/expired-bets" element={<ExpiredBets {...pageProps} userGuideContent={userGuideContent} />} />
           <Route path="/leaderboard" element={<Leaderboard {...pageProps} userGuideContent={userGuideContent} />} />
           <Route path="/admin-panel" element={<AdminPanel {...pageProps} userGuideContent={userGuideContent} />} />
-          <Route path="/placement-data" element={<PlacementData {...pageProps} userGuideContent={userGuideContent} />} />
+          <Route path="/forum" element={<Forum {...pageProps} />} />
       </Routes>
       </AppWithRouterAnnouncementBar>
     </BrowserRouter>
