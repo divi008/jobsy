@@ -74,6 +74,23 @@ router.post('/users/:id/unban', auth, admin, async (req, res) => {
   } catch (e) { res.status(500).json({ msg: 'Failed to unban user' }); }
 });
 
+// Fetch target details for viewing in admin
+router.get('/forum/post/:id', auth, admin, async (req, res) => {
+  try {
+    const post = await ForumPost.findById(req.params.id).lean();
+    if (!post) return res.status(404).json({ msg: 'Not found' });
+    res.json(post);
+  } catch (e) { res.status(500).json({ msg: 'Failed to fetch post' }); }
+});
+
+router.get('/forum/comment/:id', auth, admin, async (req, res) => {
+  try {
+    const comment = await ForumComment.findById(req.params.id).lean();
+    if (!comment) return res.status(404).json({ msg: 'Not found' });
+    res.json(comment);
+  } catch (e) { res.status(500).json({ msg: 'Failed to fetch comment' }); }
+});
+
 export default router;
 
 

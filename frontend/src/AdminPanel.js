@@ -1511,6 +1511,17 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
                   <td className="py-2 px-3 align-top max-w-[320px] truncate" title={r.reason}>{r.reason}</td>
                   <td className="py-2 px-3 align-top">{r.status}</td>
                   <td className="py-2 px-3 align-top flex gap-2 flex-wrap">
+                    <button className="admin-action" onClick={async () => {
+                      try {
+                        if (r.targetType === 'post') {
+                          const data = await forumAdminApi.getPost(r.targetId);
+                          setViewModal({ open: true, targetType: 'post', data });
+                        } else {
+                          const data = await forumAdminApi.getComment(r.targetId);
+                          setViewModal({ open: true, targetType: 'comment', data });
+                        }
+                      } catch (e) { alert('Failed to load target'); }
+                    }}>View</button>
                     <button className="admin-action" onClick={() => handleResolve(r._id)}>Resolve</button>
                     <button className="admin-action" onClick={() => handleDelete(r.targetType, r.targetId)}>Delete</button>
                     <button className="admin-action" onClick={() => handleBan(r.reporter)}>Ban User</button>
@@ -1521,6 +1532,32 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
             </tbody>
           </table>
         )}
+      </div>
+    );
+  }
+  function ViewTargetModal() {
+    if (!viewModal.open || !viewModal.data) return null;
+    const v = viewModal.data;
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+        <div className="rounded-2xl w-full max-w-3xl p-6 border-2 border-[#28c76f]/30 bg-[#0a0a0a] shadow-[0_20px_80px_rgba(0,0,0,0.7)] max-h-[90vh] overflow-y-auto">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-white text-xl font-bold">View {viewModal.targetType}</h3>
+            <button className="text-gray-300 hover:text-white text-2xl" onClick={() => setViewModal({ open:false, targetType:'post', data:null })}>&times;</button>
+          </div>
+          {viewModal.targetType === 'post' ? (
+            <div className="text-gray-200">
+              <div className="text-sm text-gray-400 mb-1">{new Date(v.createdAt).toLocaleString()} · {v.tag}</div>
+              <div className="text-white text-2xl font-bold mb-2">{v.title}</div>
+              <div className="whitespace-pre-wrap">{v.body}</div>
+            </div>
+          ) : (
+            <div className="text-gray-200">
+              <div className="text-sm text-gray-400 mb-1">{new Date(v.createdAt).toLocaleString()}</div>
+              <div className="whitespace-pre-wrap">{v.body}</div>
+            </div>
+          )}
+        </div>
       </div>
     );
   }
@@ -1765,6 +1802,7 @@ export default function AdminPanel({ user, showUserGuideModal, setShowUserGuideM
           </div>
           <style>{`.admin-action{border:1px solid #333;padding:6px 10px;border-radius:8px} .admin-action:hover{border-color:#28c76f}`}</style>
         </div>
+        <ViewTargetModal />
         <div className="flex flex-wrap justify-between mb-4 gap-2">
           <button className="bg-[#28c76f] hover:bg-[#22b36a] text-white font-bold px-4 py-2 rounded-lg flex items-center gap-2 text-base shadow" onClick={() => setShowAddModal(true)}>
             <span className="text-xl">＋</span> Add Company
