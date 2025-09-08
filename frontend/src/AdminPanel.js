@@ -1096,22 +1096,22 @@ function SelectCarouselModal({ open, onClose, onSubmit }) {
   const [companyLogos, setCompanyLogos] = useState({});
 
   useEffect(() => {
-    if (open) {
-      // Get all active companies (where results are not declared)
-      const activeCompanies = mockCompanies.filter(c => {
-        const hasResultsDeclared = c.candidates && c.candidates.some(cand => cand.result !== 'awaited');
-        return !hasResultsDeclared;
-      });
-      setAvailableCompanies(activeCompanies);
-      setSelectedCompanies([...adminCarouselCompanyIds]);
-      
-      // Initialize logos from existing companies
-      const logos = {};
-      activeCompanies.forEach(company => {
-        logos[company.id] = company.logo || '';
-      });
-      setCompanyLogos(logos);
-    }
+    if (!open) return;
+    (async () => {
+      try {
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/events`);
+        const events = Array.isArray(res.data) ? res.data : [];
+        const active = events.filter(e => e.status === 'active');
+        setAvailableCompanies(active.map(e => ({ id: e._id, name: e.companyName, role: e.jobProfile, liveEventSection: e.liveEventSection, logo: e.companyLogo })));
+        const logos = {};
+        active.forEach(e => { logos[e._id] = e.companyLogo || ''; });
+        setCompanyLogos(logos);
+        setSelectedCompanies([]);
+      } catch (e) {
+        console.error('Failed to load active events for carousel', e);
+        setAvailableCompanies([]);
+      }
+    })();
   }, [open]);
 
   const handleCompanyToggle = (companyId) => {
@@ -1185,8 +1185,7 @@ function SelectCarouselModal({ open, onClose, onSubmit }) {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
             {availableCompanies.map(company => {
               const isSelected = selectedCompanies.includes(company.id);
-              const totalTokens = mockBets.filter(bet => bet.companyId === company.id)
-                .reduce((sum, bet) => sum + (Number(bet.amount) || 0), 0);
+              const totalTokens = 0;
               
               return (
                 <div
