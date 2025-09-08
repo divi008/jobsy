@@ -6,8 +6,6 @@ export default function CreatePostModal({ open, onClose, onSubmit }) {
   const [submitting, setSubmitting] = useState(false);
   const [branchOptions, setBranchOptions] = useState([]);
 
-  if (!open) return null;
-
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setForm((f) => ({ ...f, [name]: type === 'checkbox' ? checked : value }));
@@ -26,6 +24,7 @@ export default function CreatePostModal({ open, onClose, onSubmit }) {
   };
 
   useEffect(() => {
+    if (!open) return;
     (async () => {
       try {
         const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/candidates`);
@@ -39,6 +38,8 @@ export default function CreatePostModal({ open, onClose, onSubmit }) {
       } catch (e) { setBranchOptions([]); }
     })();
   }, [open]);
+
+  if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
