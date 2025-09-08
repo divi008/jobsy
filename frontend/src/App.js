@@ -111,11 +111,7 @@ function LandingPage({ loadUser }) {
       }
       
       const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/send-verification-email`, payload);
-      if (response.data && response.data.msg) {
-        alert(response.data.msg + '\n\nFor testing: Check the backend console for the OTP.');
-      } else {
-        alert('Verification email sent! Please check your inbox.\n\nFor testing: Check the backend console for the OTP.');
-      }
+      alert(response.data?.msg || 'Verification email sent! Please check your inbox.');
       setShowEmailVerificationModal(true);
     } catch (err) {
       let errorMsg = 'Failed to send verification email';
@@ -124,7 +120,7 @@ function LandingPage({ loadUser }) {
       } else if (err.message) {
         errorMsg = err.message;
       }
-      alert('Error: ' + errorMsg + '\n\nFor testing: Check the backend console for the OTP.');
+      alert('Error: ' + errorMsg);
     } finally {
       setIsLoading(false);
     }
