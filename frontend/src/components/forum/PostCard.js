@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function PostCard({ post, onOpen, onVote, onReport, selectedVote }) {
+export default function PostCard({ post, onOpen, onVote, onReport, onDelete, selectedVote, canDelete }) {
   const score = (post.upvotes || 0) - (post.downvotes || 0);
   const glowUp = selectedVote === 'up' ? 'shadow-[0_0_12px_#ef444477] text-red-400 border-red-400' : 'text-gray-300 border-gray-600 hover:text-red-300 hover:border-red-300';
   const glowDown = selectedVote === 'down' ? 'shadow-[0_0_12px_#3b82f677] text-blue-400 border-blue-400' : 'text-gray-300 border-gray-600 hover:text-blue-300 hover:border-blue-300';
@@ -34,6 +34,9 @@ export default function PostCard({ post, onOpen, onVote, onReport, selectedVote 
           <span>{post.commentCount || 0}</span>
         </button>
         <button onClick={onReport} className="ml-auto text-xs text-gray-400 hover:text-red-400">Report</button>
+        {canDelete && (
+          <button onClick={onDelete} className="text-xs text-red-400 hover:text-red-300 border border-red-400/40 px-2 py-1 rounded-md">Delete</button>
+        )}
       </div>
       <style>{`
         .arrow-up { width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 10px solid currentColor; }
@@ -42,5 +45,6 @@ export default function PostCard({ post, onOpen, onVote, onReport, selectedVote 
     </div>
   );
 }
+
 
 

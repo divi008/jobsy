@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 
-export default function PostDetailModal({ open, post, comments, onClose, onVotePost, onAddComment, onVoteComment, onReportPost, onReportComment }) {
+export default function PostDetailModal({ open, post, comments, onClose, onVotePost, onAddComment, onVoteComment, onReportPost, onReportComment, onDeletePost, onDeleteComment, canDeletePost, currentUserId }) {
   const [sort, setSort] = useState('newest');
   const [text, setText] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(true);
@@ -35,7 +35,12 @@ export default function PostDetailModal({ open, post, comments, onClose, onVoteP
               {post.isAnonymous ? 'Anonymous' : `${post.authorName || ''}${post.authorBranch ? ' · ' + post.authorBranch : ''}${post.authorRollNo ? ' · ' + post.authorRollNo : ''}`}
             </div>
           </div>
-          <button onClick={onClose} className="text-gray-300 hover:text-white text-2xl">&times;</button>
+          <div className="flex items-center gap-3">
+            {canDeletePost && (
+              <button onClick={onDeletePost} className="text-xs text-red-400 hover:text-red-300 border border-red-400/40 px-2 py-1 rounded-md">Delete Post</button>
+            )}
+            <button onClick={onClose} className="text-gray-300 hover:text-white text-2xl">&times;</button>
+          </div>
         </div>
 
         <div className="flex items-center gap-3 mt-4">
@@ -68,6 +73,9 @@ export default function PostDetailModal({ open, post, comments, onClose, onVoteP
                 <div className="flex items-center gap-3 mt-2">
                   <button onClick={() => onVoteComment(c, 'up')} className="w-7 h-7 grid place-items-center rounded-md border text-red-400 border-red-400 shadow-[0_0_10px_#ef444477]"><span className="arrow-up" /></button>
                   <button onClick={() => onVoteComment(c, 'down')} className="w-7 h-7 grid place-items-center rounded-md border text-blue-400 border-blue-400 shadow-[0_0_10px_#3b82f677]"><span className="arrow-down" /></button>
+                  {currentUserId && c.user === currentUserId && (
+                    <button onClick={() => onDeleteComment(c)} className="ml-auto text-xs text-red-400 hover:text-red-300 border border-red-400/40 px-2 py-1 rounded-md">Delete</button>
+                  )}
                 </div>
               </div>
             ))}
@@ -95,5 +103,6 @@ export default function PostDetailModal({ open, post, comments, onClose, onVoteP
     </div>
   );
 }
+
 
 

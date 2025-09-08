@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import PageLayout from '../PageLayout';
-import { fetchPosts, createPost, votePost, fetchPostDetail, addComment, voteComment, reportTarget } from '../services/forumApi';
+import { fetchPosts, createPost, votePost, fetchPostDetail, addComment, voteComment, reportTarget, deleteOwnPost, deleteOwnComment } from '../services/forumApi';
 import PostCard from '../components/forum/PostCard';
 import CreatePostModal from '../components/forum/CreatePostModal';
 import PostDetailModal from '../components/forum/PostDetailModal';
@@ -104,7 +104,10 @@ export default function Forum(props) {
 
   const header = (
     <div className="flex flex-col md:flex-row md:items-center gap-3 justify-between mb-6">
-      <h1 className="text-3xl font-bold text-white">Forum</h1>
+      <div>
+        <h1 className="text-3xl font-extrabold text-[#28c76f]">Jobsy Forum</h1>
+        <div className="text-gray-400 text-sm">A space for open discussions and honest confessions.</div>
+      </div>
       <div className="flex flex-col md:flex-row gap-3 md:items-center">
         <select value={sort} onChange={(e)=>setSort(e.target.value)} className="rounded-md bg-black text-white border border-gray-600 px-3 py-2">
           <option value="upvotes">Most Upvotes</option>
@@ -129,7 +132,10 @@ export default function Forum(props) {
         {header}
         <div className="grid grid-cols-1 gap-4">
           {posts.map(p => (
-            <PostCard key={p._id} post={p} onOpen={()=>openDetail(p)} onVote={(t)=>voteOnPost(p,t)} onReport={()=>openReportPost(p)} />
+            <PostCard key={p._id} post={p} onOpen={()=>openDetail(p)} onVote={(t)=>voteOnPost(p,t)} onReport={()=>openReportPost(p)} onDelete={async ()=>{
+              try { await deleteOwnPost(p._id); setPosts(arr => arr.filter(x => x._id !== p._id)); }
+              catch(e){ alert(e?.response?.data?.msg || 'Failed to delete'); }
+            }} canDelete={user && (user._id === p.user || user.id === p.user)} />
           ))}
           {hasMore && <div ref={sentinelRef} className="h-10" />}
           {!hasMore && posts.length === 0 && (
@@ -149,6 +155,16 @@ export default function Forum(props) {
         onVoteComment={voteOnComment}
         onReportPost={()=>openReportPost(detail.post)}
         onReportComment={(c)=>openReportComment(c)}
+        onDeletePost={async ()=>{
+          try { await deleteOwnPost(detail.post._id); setDetail({ open:false, post:null, comments:[] }); setPosts(arr => arr.filter(x => x._id !== detail.post._id)); }
+          catch(e){ alert(e?.response?.data?.msg || 'Failed to delete post'); }
+        }}
+        onDeleteComment={async (c)=>{
+          try { await deleteOwnComment(c._id); setDetail(d => ({ ...d, comments: d.comments.filter(x => x._id !== c._id) })); }
+          catch(e){ alert(e?.response?.data?.msg || 'Failed to delete comment'); }
+        }}
+        canDeletePost={user && (user._id === (detail.post && detail.post.user) || user.id === (detail.post && detail.post.user))}
+        currentUserId={user && (user._id || user.id)}
       />
       <ReportModal open={reportState.open} onClose={()=>setReportState({ open:false, targetType:'post', target:null })} onSubmit={submitReport} targetLabel={reportState.targetType} />
     </PageLayout>

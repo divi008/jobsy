@@ -14,6 +14,8 @@ export const fetchPostDetail = (postId, params = {}) => API.get(`/api/forum/post
 export const addComment = (postId, data) => API.post(`/api/forum/posts/${postId}/comments`, data).then(r => r.data);
 export const voteComment = (commentId, type) => API.post(`/api/forum/comments/${commentId}/upvote`, { type }).then(r => r.data);
 export const reportTarget = (payload) => API.post('/api/forum/report', payload).then(r => r.data);
+export const deleteOwnPost = (postId) => API.delete(`/api/forum/posts/${postId}`).then(r => r.data);
+export const deleteOwnComment = (commentId) => API.delete(`/api/forum/comments/${commentId}`).then(r => r.data);
 
 export default {
   fetchPosts,
@@ -23,6 +25,8 @@ export default {
   addComment,
   voteComment,
   reportTarget,
+  deleteOwnPost,
+  deleteOwnComment,
 };
 
 
