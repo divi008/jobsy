@@ -88,6 +88,8 @@ export default function Forum(props) {
     try {
       const saved = await addComment(detail.post._id, payload);
       setDetail(d => ({ ...d, comments: [saved, ...d.comments] }));
+      // also update post list commentCount by +1 for that post
+      setPosts(arr => arr.map(p => p._id === detail.post._id ? { ...p, commentCount: (p.commentCount || 0) + 1 } : p));
     } catch (e) {
       alert(e?.response?.data?.msg || 'Failed to add comment');
     }
@@ -104,9 +106,9 @@ export default function Forum(props) {
 
   const header = (
     <div className="flex flex-col md:flex-row md:items-center gap-3 justify-between mb-6">
-      <div>
-        <h1 className="text-3xl font-extrabold text-[#28c76f]">Jobsy Forum</h1>
-        <div className="text-gray-400 text-sm">A space for open discussions and honest confessions.</div>
+      <div className="mb-2">
+        <h1 className="text-5xl font-extrabold text-[#28c76f] leading-tight">Jobsy Forum</h1>
+        <div className="text-gray-400 text-base">A space for open discussions and honest confessions.</div>
       </div>
       <div className="flex flex-col md:flex-row gap-3 md:items-center">
         <select value={sort} onChange={(e)=>setSort(e.target.value)} className="rounded-md bg-black text-white border border-gray-600 px-3 py-2">

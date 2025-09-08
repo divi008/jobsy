@@ -10,7 +10,12 @@ export default function PostDetailModal({ open, post, comments, onClose, onVoteP
 
   const sorted = useMemo(() => {
     if (!comments) return [];
-    const copy = [...comments];
+    const seen = new Set();
+    const unique = [];
+    for (const c of comments) {
+      if (c && c._id && !seen.has(c._id)) { seen.add(c._id); unique.push(c); }
+    }
+    const copy = unique;
     if (sort === 'oldest') return copy.sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
     if (sort === 'top') return copy.sort((a,b) => (b.upvotes - b.downvotes) - (a.upvotes - a.downvotes));
     return copy.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
