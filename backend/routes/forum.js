@@ -88,7 +88,9 @@ router.post('/posts/:id/upvote', auth, async (req, res) => {
     const post = await ForumPost.findById(req.params.id);
     if (!post) return res.status(404).json({ msg: 'Not found' });
 
-    const existing = await ForumVote.findOne({ post: post._id, user: req.user._id });
+    const userId = req.user?.id || req.user?._id;
+    if (!userId) return res.status(401).json({ msg: 'Auth user missing' });
+    const existing = await ForumVote.findOne({ post: post._id, user: userId });
     if (type === 'clear') {
       if (existing) {
         await existing.deleteOne();
@@ -96,7 +98,7 @@ router.post('/posts/:id/upvote', auth, async (req, res) => {
       }
     } else if (type === 'up' || type === 'down') {
       if (!existing) {
-        await ForumVote.create({ post: post._id, user: req.user._id, type });
+        await ForumVote.create({ post: post._id, user: userId, type });
         if (type === 'up') post.upvotes += 1; else post.downvotes += 1;
       } else if (existing.type !== type) {
         // switch
@@ -119,9 +121,11 @@ router.post('/posts/:id/comments', auth, banCheck('comment'), async (req, res) =
     if (!body || !body.trim()) return res.status(400).json({ msg: 'Body required' });
     const post = await ForumPost.findById(req.params.id);
     if (!post) return res.status(404).json({ msg: 'Not found' });
+    const userId = req.user?.id || req.user?._id;
+    if (!userId) return res.status(401).json({ msg: 'Auth user missing' });
     const comment = await ForumComment.create({
       post: post._id,
-      user: req.user._id,
+      user: userId,
       body: body.trim(),
       isAnonymous,
       authorName: isAnonymous ? '' : authorName,
@@ -141,7 +145,9 @@ router.post('/comments/:id/upvote', auth, async (req, res) => {
     const { type } = req.body; // 'up' | 'down' | 'clear'
     const comment = await ForumComment.findById(req.params.id);
     if (!comment) return res.status(404).json({ msg: 'Not found' });
-    const existing = await ForumCommentVote.findOne({ comment: comment._id, user: req.user._id });
+    const userId = req.user?.id || req.user?._id;
+    if (!userId) return res.status(401).json({ msg: 'Auth user missing' });
+    const existing = await ForumCommentVote.findOne({ comment: comment._id, user: userId });
     if (type === 'clear') {
       if (existing) {
         await existing.deleteOne();
@@ -149,7 +155,7 @@ router.post('/comments/:id/upvote', auth, async (req, res) => {
       }
     } else if (type === 'up' || type === 'down') {
       if (!existing) {
-        await ForumCommentVote.create({ comment: comment._id, user: req.user._id, type });
+        await ForumCommentVote.create({ comment: comment._id, user: userId, type });
         if (type === 'up') comment.upvotes += 1; else comment.downvotes += 1;
       } else if (existing.type !== type) {
         if (existing.type === 'up') { comment.upvotes -= 1; comment.downvotes += 1; }
