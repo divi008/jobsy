@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 import PageLayout from '../PageLayout';
 import { fetchPosts, createPost, votePost, fetchPostDetail, addComment, voteComment, reportTarget, deleteOwnPost, deleteOwnComment } from '../services/forumApi';
 import PostCard from '../components/forum/PostCard';
@@ -105,27 +106,30 @@ export default function Forum(props) {
   }
 
   const header = (
-    <div className="flex flex-col md:flex-row md:items-center gap-3 justify-between mb-6">
-      <div className="mb-2">
+    <motion.div className="mb-8" initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
+      <div className="text-center mb-4">
         <h1 className="text-5xl font-extrabold text-[#28c76f] leading-tight">Jobsy Forum</h1>
         <div className="text-gray-400 text-base">A space for open discussions and honest confessions.</div>
       </div>
-      <div className="flex flex-col md:flex-row gap-3 md:items-center">
-        <select value={sort} onChange={(e)=>setSort(e.target.value)} className="rounded-md bg-black text-white border border-gray-600 px-3 py-2">
+      <div className="flex flex-col md:flex-row gap-3 md:items-center justify-center">
+        <select value={sort} onChange={(e)=>setSort(e.target.value)} className="h-12 rounded-lg bg-[#0b0f0f] text-white border border-[#28c76f]/30 px-3">
           <option value="upvotes">Most Upvotes</option>
           <option value="newest">Newest</option>
           <option value="comments">Most Commented</option>
         </select>
-        <select value={filter} onChange={(e)=>setFilter(e.target.value)} className="rounded-md bg-black text-white border border-gray-600 px-3 py-2">
+        <select value={filter} onChange={(e)=>setFilter(e.target.value)} className="h-12 rounded-lg bg-[#0b0f0f] text-white border border-[#28c76f]/30 px-3">
           <option value="">All Tags</option>
           <option>General</option>
           <option>Company</option>
           <option>Branch</option>
         </select>
-        <input value={search} onChange={(e)=>setSearch(e.target.value)} placeholder="Search..." className="rounded-md bg-black text-white border border-gray-600 px-3 py-2" />
-        <button onClick={()=>setShowCreate(true)} className="px-4 py-2 rounded-md bg-[#28c76f] text-black font-semibold hover:bg-[#22b455] shadow-[0_10px_30px_rgba(40,199,111,0.35)]">Create Confession</button>
+        <div className="relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">🔍</span>
+          <input value={search} onChange={(e)=>setSearch(e.target.value)} placeholder="Search..." className="h-12 pl-9 pr-3 rounded-lg bg-[#0b0f0f] text-white border border-[#28c76f]/30" />
+        </div>
+        <button onClick={()=>setShowCreate(true)} className="h-12 px-5 rounded-lg bg-[#28c76f] text-black font-semibold hover:bg-[#22b455] shadow-[0_10px_30px_rgba(40,199,111,0.35)]">Create Confession</button>
       </div>
-    </div>
+    </motion.div>
   );
 
   return (
@@ -133,11 +137,16 @@ export default function Forum(props) {
       <div className="w-full">
         {header}
         <div className="grid grid-cols-1 gap-4">
-          {posts.map(p => (
-            <PostCard key={p._id} post={p} onOpen={()=>openDetail(p)} onVote={(t)=>voteOnPost(p,t)} onReport={()=>openReportPost(p)} onDelete={async ()=>{
+          {useMemo(() => {
+            const seen = new Set();
+            return posts.filter(p => { if (!p || !p._id || seen.has(p._id)) return false; seen.add(p._id); return true; });
+          }, [posts]).map(p => (
+            <motion.div key={p._id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
+            <PostCard post={p} onOpen={()=>openDetail(p)} onVote={(t)=>voteOnPost(p,t)} onReport={()=>openReportPost(p)} onDelete={async ()=>{
               try { await deleteOwnPost(p._id); setPosts(arr => arr.filter(x => x._id !== p._id)); }
               catch(e){ alert(e?.response?.data?.msg || 'Failed to delete'); }
             }} canDelete={user && (user._id === p.user || user.id === p.user)} />
+            </motion.div>
           ))}
           {hasMore && <div ref={sentinelRef} className="h-10" />}
           {!hasMore && posts.length === 0 && (

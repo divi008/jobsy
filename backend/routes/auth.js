@@ -223,6 +223,11 @@ router.post('/reset-password', async (req, res) => {
 router.post('/signup', async (req, res) => {
   const { name, email, enrollmentNumber, password, isAdmin } = req.body;
   try {
+    const allowedDomains = ['itbhu.ac.in','iitbhu.ac.in'];
+    const emailDomain = (email || '').split('@')[1];
+    if (!allowedDomains.includes((emailDomain || '').toLowerCase())) {
+      return res.status(400).json({ msg: 'Only institute emails allowed (@itbhu.ac.in or @iitbhu.ac.in)' });
+    }
     // Check if user already exists with this email
     let user = await User.findOne({ email });
     if (user && user.isEmailVerified && user.name) {
@@ -286,6 +291,11 @@ router.post('/signup', async (req, res) => {
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
   try {
+    const allowedDomains = ['itbhu.ac.in','iitbhu.ac.in'];
+    const emailDomain = (email || '').split('@')[1];
+    if (!allowedDomains.includes((emailDomain || '').toLowerCase())) {
+      return res.status(400).json({ msg: 'Only institute emails allowed (@itbhu.ac.in or @iitbhu.ac.in)' });
+    }
     let user = await User.findOne({ email });
     if (!user) return res.status(400).json({ msg: 'Invalid Credentials' });
 
