@@ -17,8 +17,10 @@ router.post('/posts', auth, banCheck('confession'), async (req, res) => {
   try {
     const { title, body = '', tag = 'General', isAnonymous = false, authorName = '', authorBranch = '', authorRollNo = '' } = req.body;
     if (!title || title.length > 150) return res.status(400).json({ msg: 'Invalid title' });
+    const userId = req.user?.id || req.user?._id;
+    if (!userId) return res.status(401).json({ msg: 'Auth user missing' });
     const post = await ForumPost.create({
-      user: req.user._id,
+      user: userId,
       title: title.trim(),
       body,
       tag,
