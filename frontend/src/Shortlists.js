@@ -294,7 +294,7 @@ export default function Shortlists({ user, showUserGuideModal, setShowUserGuideM
               )}
               Refresh
             </button>
-            <span className="bg-[#28c76f] text-white font-bold px-5 py-2 rounded text-base" style={{ borderRadius: 4 }}>{filteredCandidates.length} Results</span>
+          <span className="bg-[#28c76f] text-white font-bold px-5 py-2 rounded text-base" style={{ borderRadius: 4 }}>{filteredCandidates.length} Results</span>
           </div>
         </div>
         <div className="overflow-x-auto border border-[#28c76f]/20 px-2"
@@ -321,7 +321,7 @@ export default function Shortlists({ user, showUserGuideModal, setShowUserGuideM
                 <motion.tr key={cand._id || cand.enrollmentNumber} variants={{ hidden: { opacity: 0, x: -40 }, visible: { opacity: 1, x: 0, transition: { duration: 0.4 } } }} className="border-b border-[#28c76f]/10 hover:bg-[#28c76f]/10 transition group relative">
                   {(() => { const norm = normalizeCourseBranch(cand); return (
                     <>
-                      <td className="px-7 py-3 text-white font-semibold whitespace-nowrap align-middle">{cand.name}</td>
+                  <td className="px-7 py-3 text-white font-semibold whitespace-nowrap align-middle">{cand.name}</td>
                       <td className="px-7 py-3 text-gray-200 whitespace-nowrap align-middle">{cand.enrollmentNumber}</td>
                       <td className="px-7 py-3 text-gray-200 whitespace-nowrap align-middle">{norm.course || '—'}</td>
                       <td className="px-7 py-3 text-gray-200 whitespace-nowrap align-middle">{norm.branch || '—'}</td>
